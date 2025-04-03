@@ -16,4 +16,9 @@ return "User page";
     public String getAdmin(){
         return "Admin page";
     }
+
+    @GetMapping("/visitor")
+    public String getVisitor(){
+        return "Visitor page";
+    }
 }

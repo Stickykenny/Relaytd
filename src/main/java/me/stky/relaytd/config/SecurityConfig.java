@@ -10,11 +10,8 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
@@ -30,32 +27,41 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+    /*
     @Bean
     public InMemoryUserDetailsManager userDetailsService() {
-        UserDetails user1 = User.withUsername("user1")
-                .password(passwordEncoder().encode("user1Password"))
-                .roles("USER")
+        // Doesn't work with db credential method
+        UserDetails user1 = User.withUsername("u1")
+                .password(passwordEncoder().encode("u1"))
+                .roles("VISITOR")
                 .build();
-        UserDetails user2 = User.withUsername("user2")
-                .password(passwordEncoder().encode("user2Password"))
-                .roles("USER")
+        UserDetails user2 = User.withUsername("u2")
+                .password(passwordEncoder().encode("u2"))
+                .roles("VISITOR")
                 .build();
-        UserDetails admin = User.withUsername("admin")
-                .password(passwordEncoder().encode("adminPassword"))
-                .roles("USER","ADMIN")
+        UserDetails admin = User.withUsername("a")
+                .password(passwordEncoder().encode("a"))
+                .roles("VISITOR","USER")
                 .build();
         return new InMemoryUserDetailsManager(user1, user2, admin);
     }
-
+    */
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
-                .authorizeHttpRequests(auth -> {
-                auth.requestMatchers("/admin").hasRole("ADMIN");
-                auth.requestMatchers("/user").hasRole("USER");
-                auth.anyRequest().authenticated();
-            }).formLogin(Customizer.withDefaults()).build();
+                .authorizeHttpRequests(
+                        auth -> auth
+                        .requestMatchers("/admin/**").hasAuthority("ADMIN")
+                        .requestMatchers("/user/**").hasAnyAuthority("USER", "ADMIN")
+                        .anyRequest().authenticated()
+
+                )
+                .formLogin(Customizer.withDefaults())
+                .logout(Customizer.withDefaults()).build();
+
+        // Use hasAuthority if data is "ADMIN"
+        // Use hasRole if data is "ROLE_ADMIN"
         }
 
     @Bean
@@ -64,4 +70,6 @@ public class SecurityConfig {
         authenticationManagerBuilder.userDetailsService(customUserDetailsService).passwordEncoder(bCryptPasswordEncoder);
         return authenticationManagerBuilder.build();
     }
+
+
 }
