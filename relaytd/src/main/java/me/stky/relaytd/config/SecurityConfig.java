@@ -6,12 +6,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
@@ -27,38 +29,46 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    /*
+
     @Bean
     public InMemoryUserDetailsManager userDetailsService() {
-        // Doesn't work with db credential method
-        UserDetails user1 = User.withUsername("u1")
-                .password(passwordEncoder().encode("u1"))
+        UserDetails user1 = User.withUsername("visitor")
+                .password(passwordEncoder().encode("password"))
                 .roles("VISITOR")
                 .build();
-        UserDetails user2 = User.withUsername("u2")
-                .password(passwordEncoder().encode("u2"))
-                .roles("VISITOR")
+        UserDetails admin = User.withUsername("visitor2")
+                .password(passwordEncoder().encode("password"))
+                .roles("NO_ROLE")
                 .build();
-        UserDetails admin = User.withUsername("a")
-                .password(passwordEncoder().encode("a"))
-                .roles("VISITOR","USER")
-                .build();
-        return new InMemoryUserDetailsManager(user1, user2, admin);
+        return new InMemoryUserDetailsManager(user1, admin);
     }
-    */
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
         return http
+                .csrf(csrf -> csrf.disable()) // cookie attack , avoid disabling it
+
                 .authorizeHttpRequests(
+
                         auth -> auth
-                        .requestMatchers("/admin/**").hasAuthority("ADMIN")
+                                .requestMatchers("/admin/**").hasAuthority("ADMIN")
                         .requestMatchers("/user/**").hasAnyAuthority("USER", "ADMIN")
                         .anyRequest().authenticated()
 
                 )
-                .formLogin(Customizer.withDefaults())
-                .logout(Customizer.withDefaults()).build();
+                .formLogin(c -> c.loginPage("/login.html")
+                        .permitAll()
+                        .defaultSuccessUrl("/homepage", true)
+                        .failureUrl("/login.html?error")
+                )
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+                        .logoutSuccessUrl("/login?logout=true")
+                        .invalidateHttpSession(true)
+                        .deleteCookies("JSESSIONID")
+                        .permitAll()
+                ).build();
 
         // Use hasAuthority if data is "ADMIN"
         // Use hasRole if data is "ROLE_ADMIN"
@@ -66,9 +76,17 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationManager authenticationManager(HttpSecurity http, BCryptPasswordEncoder bCryptPasswordEncoder) throws Exception {
+
         AuthenticationManagerBuilder authenticationManagerBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
+        authenticationManagerBuilder.parentAuthenticationManager(null); // avoid infinite loop on bad credential
+
+        // In Memory
+        authenticationManagerBuilder.inMemoryAuthentication().userDetailsPasswordManager(userDetailsService());
+        authenticationManagerBuilder.userDetailsService(userDetailsService());
+
+
         authenticationManagerBuilder.userDetailsService(customUserDetailsService).passwordEncoder(bCryptPasswordEncoder);
-        return authenticationManagerBuilder.build();
+        return authenticationManagerBuilder.getOrBuild();
     }
 
 
