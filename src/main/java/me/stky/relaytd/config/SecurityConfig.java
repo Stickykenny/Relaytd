@@ -47,28 +47,28 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         return http
-                .csrf(csrf -> csrf.disable()) // cookie attack , avoid disabling it
+                //.csrf(csrf ->  csrf.csrfTokenRepository(new HttpSessionCsrfTokenRepository())) // cookie attack , avoid disabling it
 
                 .authorizeHttpRequests(
 
                         auth -> auth
+                                .requestMatchers("/login", "/css/**", "/js/**").permitAll()
                                 .requestMatchers("/admin/**").hasAuthority("ADMIN")
                         .requestMatchers("/user/**").hasAnyAuthority("USER", "ADMIN")
                         .anyRequest().authenticated()
 
                 )
-                .formLogin(c -> c.loginPage("/login.html")
+                .formLogin(c -> c.loginPage("/login")
                         .permitAll()
                         .defaultSuccessUrl("/homepage", true)
                         .failureUrl("/login.html?error")
                 )
                 .logout(logout -> logout
-                        .logoutUrl("/logout")
                         .logoutSuccessUrl("/login?logout=true")
                         .invalidateHttpSession(true)
                         .deleteCookies("JSESSIONID")
-                        .permitAll()
-                ).build();
+                        .permitAll())
+                .build();
 
         // Use hasAuthority if data is "ADMIN"
         // Use hasRole if data is "ROLE_ADMIN"
