@@ -3,6 +3,7 @@ package me.stky.relaytd.config;
 
 import me.stky.relaytd.api.service.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -15,6 +16,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 
 @Configuration
 @EnableWebSecurity
@@ -48,20 +51,24 @@ public class SecurityConfig {
 
         return http
                 //.csrf(csrf ->  csrf.csrfTokenRepository(new HttpSessionCsrfTokenRepository())) // cookie attack , avoid disabling it
+                // authorize PUT and POST
+                .csrf(csrf -> csrf
+                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                        .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()))
 
                 .authorizeHttpRequests(
 
                         auth -> auth
-                                .requestMatchers("/login", "/css/**", "/js/**").permitAll()
+                                .requestMatchers("/login", "/resources/**", "/static/**", "/css/**", "/js/**").permitAll()
                                 .requestMatchers("/admin/**").hasAuthority("ADMIN")
-                        .requestMatchers("/user/**").hasAnyAuthority("USER", "ADMIN")
-                        .anyRequest().authenticated()
+                                .requestMatchers("/user/**").hasAnyAuthority("USER", "ADMIN")
+                                .anyRequest().authenticated()
 
                 )
                 .formLogin(c -> c.loginPage("/login")
                         .permitAll()
                         .defaultSuccessUrl("/homepage", true)
-                        .failureUrl("/login.html?error")
+                        .failureUrl("/login?error=true")
                 )
                 .logout(logout -> logout
                         .logoutSuccessUrl("/login?logout=true")
@@ -72,7 +79,7 @@ public class SecurityConfig {
 
         // Use hasAuthority if data is "ADMIN"
         // Use hasRole if data is "ROLE_ADMIN"
-        }
+    }
 
     @Bean
     public AuthenticationManager authenticationManager(HttpSecurity http, BCryptPasswordEncoder bCryptPasswordEncoder) throws Exception {

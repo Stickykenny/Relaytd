@@ -30,15 +30,14 @@ public class LoginController {
         model.addAttribute("userAgent", userAgent);
 
         if (error != null) model.addAttribute("errorMsg", "Invalid username or password.");
-        //if (logout != null) model.addAttribute("logoutMsg", "You've been logged out.");
+        if (logout != null) model.addAttribute("logoutMsg", "You've been logged out.");
 
         return "login";
-        }
-
+    }
 
 
     @GetMapping("/homepage")
-    String getHomepage(HttpServletRequest request, Model model)  {
+    String getHomepage(HttpServletRequest request, Model model) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
         Collection<SimpleGrantedAuthority> list = (Collection<SimpleGrantedAuthority>) auth.getAuthorities();
@@ -51,7 +50,7 @@ public class LoginController {
         // Add attributes for Thymeleaf
         model.addAttribute("clientIp", clientIp);
         model.addAttribute("userAgent", userAgent);
-        model.addAttribute("N", auth.getName() );
+        model.addAttribute("N", auth.getName());
         model.addAttribute("Auto", auth.getAuthorities());
 
         return "filler";

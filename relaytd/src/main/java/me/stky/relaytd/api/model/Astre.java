@@ -1,5 +1,6 @@
 package me.stky.relaytd.api.model;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -14,14 +15,13 @@ import java.time.LocalDate;
 @Table(name = "connections")
 public class Astre {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    private String name;
-    //private AstreID astreID;
+    @EmbeddedId
+    private AstreID astreID;
 
     private String tags;
     private String description;
+    @Schema(hidden = true)
     private LocalDate date_added;
+    @Schema(hidden = true)
     private LocalDate last_modified;
 }
