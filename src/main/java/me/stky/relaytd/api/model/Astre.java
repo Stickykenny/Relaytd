@@ -20,6 +20,7 @@ public class Astre {
 
     private String tags;
     private String description;
+    private String parent;
     @Schema(hidden = true)
     private LocalDate date_added;
     @Schema(hidden = true)
