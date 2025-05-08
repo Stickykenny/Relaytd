@@ -2,6 +2,7 @@ package me.stky.relaytd.api.service;
 
 import me.stky.relaytd.api.model.Astre;
 import me.stky.relaytd.api.model.AstreDTO;
+import me.stky.relaytd.api.model.AstreID;
 
 import java.util.List;
 import java.util.Optional;
@@ -18,4 +19,7 @@ public interface AstreService {
     boolean deleteAstre(String type, String name);
 
     List<Astre> upsertAstres(List<AstreDTO> astresDTO);
+
+
+    Optional<Astre> updateAstreID(AstreID olderID, AstreID newID);
 }

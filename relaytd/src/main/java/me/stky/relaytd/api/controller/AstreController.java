@@ -3,6 +3,7 @@ package me.stky.relaytd.api.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import me.stky.relaytd.api.model.Astre;
 import me.stky.relaytd.api.model.AstreDTO;
+import me.stky.relaytd.api.model.AstreID;
 import me.stky.relaytd.api.service.AstreService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -73,4 +74,12 @@ public final class AstreController {
         return ResponseEntity.ok(upsertedAstres); // returns 200 regardless of list content
     }
 
+
+    @Operation(summary = "Update an Astre's ID", description = "Update an Astre's ID, remove the old one")
+    @PutMapping("/{type}/{name}")
+    public ResponseEntity<Astre> updateAstreID(@PathVariable("type") String type, @PathVariable("name") String name, @RequestBody AstreID newAstreID) {
+        return astreService.updateAstreID(new AstreID(type, name), newAstreID)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
+    }
 }

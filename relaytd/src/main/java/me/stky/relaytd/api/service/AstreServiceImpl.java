@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -70,6 +71,31 @@ public class AstreServiceImpl implements AstreService {
         return updatedAstres;
     }
 
+    /**
+     * Will update an Astre's ID, save with the new ID then delete the older ID.
+     * Doesn't work if oldID doesn't exist or newID already exist.
+     *
+     * @param oldID AstreID to be changed
+     * @param newID new AstreID to use
+     * @return The new Astre created/updated
+     */
+    @Override
+    public Optional<Astre> updateAstreID(AstreID oldID, AstreID newID) {
+        Objects.requireNonNull(oldID);
+        Objects.requireNonNull(newID, "Newer ID can't be null");
+
+        var astreDB = astreRepository.findById(oldID);
+        if (astreDB.isEmpty() || astreRepository.findById(newID).isPresent()) {
+            return Optional.empty();
+        }
+        Astre astreCopy = astreDB.get().clone();
+        astreCopy.setAstreID(newID);
+        astreCopy.setLast_modified(LocalDate.now());
+        Astre newAstre = astreRepository.save(astreCopy);
+        astreRepository.deleteById(oldID);
+        return Optional.of(newAstre);
+    }
+
     private Astre convertToEntity(AstreDTO astreDTO) {
         Astre astre = new Astre();
         astre.setAstreID(astreDTO.astreID());
@@ -77,9 +103,21 @@ public class AstreServiceImpl implements AstreService {
         astre.setDescription(astreDTO.description());
         astre.setParent(astreDTO.parent());
         astre.setDescription(astreDTO.description());
+
+
+        astre.setFrom_before(astreDTO.fromBefore());
+        if (astreDTO.fromBefore() == null) {
+            astre.setFrom_before(Boolean.TRUE);
+        }
         return astre;
     }
 
+    /**
+     * Update timestamp of Astre, if the astre doesn't exist in DB also update the date_added
+     *
+     * @param astre The Astre to modify
+     * @return The astre with updated timestamps
+     */
     private Astre createOrUpdateTimestamps(Astre astre) {
         Optional<Astre> astreDB = astreRepository.findById(astre.getAstreID());
         if (astreDB.isPresent()) {
