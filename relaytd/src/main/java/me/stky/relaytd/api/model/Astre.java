@@ -2,15 +2,14 @@ package me.stky.relaytd.api.model;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
 
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
+@Getter
+@Setter
 @Entity
 @Table(name = "connections")
 public class Astre {
@@ -25,4 +24,16 @@ public class Astre {
     private LocalDate date_added;
     @Schema(hidden = true)
     private LocalDate last_modified;
+    private Boolean from_before; // this field indicate the date_added isn't representative of the date this astre was discovered
+
+    /**
+     * Deep copy
+     *
+     * @return a deep-copy of the current Astre
+     */
+    public Astre clone() {
+        return new Astre(
+                new AstreID(astreID.getType(), astreID.getName()),
+                tags, description, parent, date_added, last_modified, from_before);
+    }
 }
