@@ -11,7 +11,9 @@ public record AstreDTO(
         AstreID astreID,
         String tags,
         String description,
-        String parent
+        String parent,
+
+        Boolean fromBefore
 ) {
     public AstreDTO {
         Objects.requireNonNull(astreID, "Please provide a non-null ID for the Astre");
