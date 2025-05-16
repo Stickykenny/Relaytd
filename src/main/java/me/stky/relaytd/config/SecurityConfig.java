@@ -1,7 +1,6 @@
 package me.stky.relaytd.config;
 
 
-import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import me.stky.relaytd.api.service.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -13,19 +12,11 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.JwtEncoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
-
-import javax.crypto.spec.SecretKeySpec;
 
 @Configuration
 @EnableWebSecurity
@@ -33,21 +24,6 @@ public class SecurityConfig {
 
     @Autowired
     private CustomUserDetailsService customUserDetailsService;
-
-    private String jwtKey = "hahahahaCHANGETHISANDHIDEIT"; // See RSA key and have non symetrical
-
-
-    //
-    @Bean
-    public JwtDecoder jwtDecoder() {
-        SecretKeySpec secretKey = new SecretKeySpec(this.jwtKey.getBytes(), 0, this.jwtKey.getBytes().length, "RSA");
-        return NimbusJwtDecoder.withSecretKey(secretKey).macAlgorithm(MacAlgorithm.HS256).build();
-    }
-
-    @Bean
-    public JwtEncoder jwtEncoder() {
-        return new NimbusJwtEncoder(new ImmutableSecret<>(this.jwtKey.getBytes()));
-    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -74,10 +50,11 @@ public class SecurityConfig {
         return http
                 //.csrf(csrf ->  csrf.csrfTokenRepository(new HttpSessionCsrfTokenRepository())) // cookie attack , avoid disabling it
                 // authorize PUT and POST
-                .csrf(csrf -> csrf
+                //.csrf(csrf -> csrf.disable())
+                /*.csrf(csrf -> csrf
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                         .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()))
-
+*/
                 .authorizeHttpRequests(
 
                         auth -> auth
@@ -88,19 +65,13 @@ public class SecurityConfig {
 
                 )
 
-                // TODO debug for JWT token auth
-                //.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // for token auth jwt
-                //.oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults()))
-                //.httpBasic(Customizer.withDefaults()) // what's this one ?
-
-
                 /*.formLogin(c -> c.loginPage("/login")
                         .permitAll()
                         .defaultSuccessUrl("/homepage", true)
                         .failureUrl("/login?error=true")
                 )*/
                 .formLogin(Customizer.withDefaults())
-                .oauth2Login(Customizer.withDefaults()) // method not found
+                .oauth2Login(Customizer.withDefaults())
                 .logout(logout -> logout
                         .logoutSuccessUrl("/login?logout=true")
                         .invalidateHttpSession(true)
@@ -110,6 +81,15 @@ public class SecurityConfig {
 
         // Use hasAuthority if data is "ADMIN"
         // Use hasRole if data is "ROLE_ADMIN"
+
+
+    }
+
+    @Bean
+    public UserDetailsService users() {
+        UserDetails user = User.builder().username("user").password(passwordEncoder().encode("password")).roles("USER")
+                .build();
+        return new InMemoryUserDetailsManager(user);
     }
 
     @Bean
