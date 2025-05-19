@@ -1,6 +1,7 @@
 package me.stky.relaytd.api.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
+import me.stky.relaytd.api.service.JWTService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -22,16 +23,25 @@ import java.util.Collection;
 import java.util.Map;
 
 @Controller
+@CrossOrigin
 public final class LoginController {
 
     @Autowired
     private OAuth2AuthorizedClientService authorizedClientService;
 
+    private JWTService jwtService;
 
-    public LoginController(OAuth2AuthorizedClientService authorizedClientService) {
+    public LoginController(JWTService jwtService, OAuth2AuthorizedClientService authorizedClientService) {
+        this.jwtService = jwtService;
         this.authorizedClientService = authorizedClientService;
     }
 
+    @PostMapping("/login")
+    @ResponseBody // Required else thymeleaf search for it's template
+    public String getToken(Authentication authentication) {
+        String token = jwtService.generateToken(authentication);
+        return token;
+    }
 
     @GetMapping("/login")
     public String loginPage(@RequestParam(value = "error", required = false) String error,
@@ -80,7 +90,7 @@ public final class LoginController {
     @GetMapping("/")
     @ResponseBody // Required else thymeleaf search for it's template
     public String getGithub(Principal user) {
-        return "Welcome, " + user.toString() + "\n http://localhost:8080/userInfo ";
+        return "Welcome, ";//+ user.toString() + "\n http://localhost:8080/userInfo ";
     }
 
 
