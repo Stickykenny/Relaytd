@@ -2,7 +2,7 @@
 
 # Relaytd
 (Back-end)  
- <> See Front-end ~~and usage~~ at [Overlaytd](https://github.com/Stickykenny/Overlaytd) <>
+ <> See Front-End ~~and usage~~ at [Overlaytd](https://github.com/Stickykenny/Overlaytd) <>
 
 
 On the theme of astral . . .  
@@ -13,10 +13,10 @@ Web-application to centralize my own interests
 
 
  **Front-end** | **Back-end**    
-Angular 19 | Java 21       ---  
----- Typescript 5  | Spring Boot 3.4   
-Bootstrap | Maven ---  
- . Ag Grid 32 | PostgreSQL        
+Angular 19 | Java 21       -  
+------- Typescript 5  | Spring Boot 3.4   
+Bootstrap | Maven -  
+ . Ag Grid 32 | PostgreSQL       
 
 
 
@@ -37,9 +37,14 @@ JPA : Hibernate ORM implementation
 
 #### Main
 
-- CRUD Operation with PostgreSQL database
-- DTO (Data Transfer Object) Usage 
-- Swagger integrated
+> - CRUD Operation with PostgreSQL database
+> - DTO (Data Transfer Object) Usage 
+> - Swagger integrated   
+  
+
+> - API call to Back-end
+> - HttpInterceptor Used for JWT token
+> - Add/Send new entries
 
 #### Security 
 - Spring Security Filter Chain : CORS, ~~CSRF (currently disabled)~~ and role-based access
@@ -53,6 +58,9 @@ JPA : Hibernate ORM implementation
 
 - Server UI with Thymeleaf => now moved to a proper Back-end
 
+#### Plan
+
+*I am still thinking about if I want to make public my todolist/desire to implement and learn new techs*
 
 ### Others 
 

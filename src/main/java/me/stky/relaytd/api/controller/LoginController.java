@@ -42,7 +42,8 @@ public final class LoginController {
         String token = jwtService.generateToken(authentication);
         return token;
     }
-
+/*
+// Old endpoint with Thymeleaf
     @GetMapping("/login")
     public String loginPage(@RequestParam(value = "error", required = false) String error,
                             @RequestParam(value = "logout", required = false) String logout,
@@ -65,6 +66,10 @@ public final class LoginController {
     }
 
 
+ */
+
+/*
+// Old endpoint with Thymeleaf
     @GetMapping("/homepage")
     String getHomepage(HttpServletRequest request, Model model) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -84,7 +89,7 @@ public final class LoginController {
 
         return "filler";
 
-    }
+    }*/
 
 
     @GetMapping("/")

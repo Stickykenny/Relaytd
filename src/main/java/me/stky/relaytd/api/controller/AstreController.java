@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/astres")
+@RequestMapping("/api/astres")
 public final class AstreController {
 
     @Autowired
@@ -67,6 +67,7 @@ public final class AstreController {
     @Operation(summary = "Save/Update multiples astre", description = "Mass update")
     @PostMapping("/astres")
     public ResponseEntity<List<Astre>> upsertAstres(@RequestBody List<AstreDTO> astresDTO) {
+        System.out.println("save multiples");
         List<Astre> upsertedAstres = astreService.upsertAstres(astresDTO);
         if (upsertedAstres.isEmpty()) {
             return ResponseEntity.noContent().build(); // returns 204 No Content with no body
