@@ -2,18 +2,16 @@ package me.stky.relaytd.api.controller;
 
 
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.web.csrf.CsrfToken;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/csrf")
+@RequestMapping("/csrf/token")
 public class CsrfController {
 
-    @PostMapping
-    @ResponseStatus(HttpStatus.OK)
-    public void CsrfToken() {
+    @GetMapping
+    public CsrfToken CsrfToken(CsrfToken token) {
+        return token;
 
     }
 }

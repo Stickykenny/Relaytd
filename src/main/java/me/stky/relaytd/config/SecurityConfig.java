@@ -26,6 +26,8 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -38,6 +40,7 @@ import java.util.Arrays;
 public class SecurityConfig {
 
 
+    //private String jwtKey = "your-256-bit-secret-key-that-is-at-least-32-characters";
     private String jwtKey = "toupdate.....99999999999999999999999999999";
 
     @Autowired
@@ -69,7 +72,7 @@ public class SecurityConfig {
 
     @Bean
     public JwtDecoder jwtDecoder() {
-        SecretKeySpec secretKey = new SecretKeySpec(this.jwtKey.getBytes(), 0, this.jwtKey.getBytes().length, "RSA");
+        SecretKeySpec secretKey = new SecretKeySpec(this.jwtKey.getBytes(), 0, this.jwtKey.getBytes().length, "HmacSHA256");
         return NimbusJwtDecoder.withSecretKey(secretKey).macAlgorithm(MacAlgorithm.HS256).build();
     }
 
@@ -77,8 +80,9 @@ public class SecurityConfig {
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Arrays.asList("http://localhost:4200"));
-        configuration.setAllowedMethods(Arrays.asList("*"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
+        configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
@@ -89,18 +93,17 @@ public class SecurityConfig {
         return http
 
                 //  TODO Currently working on csrf from angular
-                //.csrf(csrf -> csrf
-                //        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                //        .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()))*/
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .csrf(AbstractHttpConfigurer::disable)
+                .csrf(AbstractHttpConfigurer::disable) // SPA w/ JWT doesn't need csrf => csrf is for cookie / server-rendered pages
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("/login", "/resources/**", "/static/**", "/css/**", "/js/**", "/csrf").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/csrf/token").permitAll()
+                        .requestMatchers("/login", "/logout", "/resources/**", "/static/**", "/css/**", "/js/**").permitAll()
                         .anyRequest().authenticated())
                 .oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults())) // incompatible with formlogin
                 .httpBasic(Customizer.withDefaults()).build();
+
     }
 
     /*@Bean
@@ -113,7 +116,7 @@ public class SecurityConfig {
                 //        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                 //        .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()))
                 .csrf(AbstractHttpConfigurer::disable)
-                .cors(Customizer.withDefaults())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(
                         auth -> auth
                                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // OPTIONS requests for handling CORS

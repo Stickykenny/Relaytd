@@ -37,26 +37,32 @@ JPA : Hibernate ORM implementation
 
 #### Main
 
+Back-end
 > - CRUD Operation with PostgreSQL database
 > - DTO (Data Transfer Object) Usage 
 > - Swagger integrated   
   
 
+Front-end
+
 > - API call to Back-end
-> - HttpInterceptor Used for JWT token
+> - HttpInterceptorFn Used for JWT token
 > - Add/Send new entries
+> - Toast Notification with ngx-toastr
 
 #### Security 
-- Spring Security Filter Chain : CORS, ~~CSRF (currently disabled)~~ and role-based access
+- Spring Security Filter Chain : CORS and role-based access
 - User Authentification with Database and In-Memory 
 - OAuth 2.0 with Github or Google
 - JWT token generation and requirement
+- CSRF is disabled and not needed but implementation is commented and still available to see
 </div>
 
 
 #### Deprecated
 
 - Server UI with Thymeleaf => now moved to a proper Back-end
+- CSRF interceptor => doesn't have a usage when using JWT on SPA
 
 #### Plan
 
