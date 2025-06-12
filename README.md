@@ -63,6 +63,13 @@ Front-end
 
 - Server UI with Thymeleaf => now moved to a proper Back-end
 - CSRF interceptor => doesn't have a usage when using JWT on SPA
+- 
+#### Comments
+
+- I know JWT shouldn't be on queryParam, but I lack expertise to implement it as a cookie while making formLogin work at the same time (the id was invalid on oauth side): current hint would be to learn more about the @Order annotation and make 2 WebSecurityConfigurerAdapter
+- Looking into ways to introduce custom animations and procedural animations with layers into the web-app
+- I am leaving the comments as they are a learning point in this project
+
 
 #### Plan
 

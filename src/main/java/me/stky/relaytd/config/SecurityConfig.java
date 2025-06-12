@@ -3,6 +3,7 @@ package me.stky.relaytd.config;
 
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import me.stky.relaytd.api.service.CustomUserDetailsService;
+import me.stky.relaytd.api.service.JWTService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -51,6 +52,12 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+    @Bean
+    public JwtLoginSuccessHandler jwtLoginSuccessHandler(JWTService jwtService) {
+        return new JwtLoginSuccessHandler(jwtService);
+    }
+
+
 
     @Bean
     public InMemoryUserDetailsManager userDetailsService() {
@@ -95,17 +102,23 @@ public class SecurityConfig {
                 //  TODO Currently working on csrf from angular
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable) // SPA w/ JWT doesn't need csrf => csrf is for cookie / server-rendered pages
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                //.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/csrf/token").permitAll()
-                        .requestMatchers("/login", "/logout", "/resources/**", "/static/**", "/css/**", "/js/**").permitAll()
+                        .requestMatchers("/login","/auth/**", "/logout", "/resources/**", "/static/**", "/css/**", "/js/**").permitAll()
                         .anyRequest().authenticated())
-                .oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults())) // incompatible with formlogin
+
+                .oauth2Login(oauth -> oauth.successHandler(jwtLoginSuccessHandler(new JWTService(jwtEncoder()))))
+
+                .oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults())) // Contains protected ressources // incompatible with formlogin
+                // Authentification server : provide ID : ex : Github, FB, Google
+                // Client Server is still Spring Boot - The Frontend calls the backend that ask the auth
                 .httpBasic(Customizer.withDefaults()).build();
 
     }
 
+    //server-side login
     /*@Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
@@ -144,7 +157,7 @@ public class SecurityConfig {
                 .build();
         // Use hasAuthority if data is "ADMIN"
         // Use hasRole if data is "ROLE_ADMIN"
-    } // */
+    } //*/
 
     @Bean
     public UserDetailsService users() {
