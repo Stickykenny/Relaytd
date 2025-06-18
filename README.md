@@ -41,6 +41,7 @@ Back-end
 > - CRUD Operation with PostgreSQL database
 > - DTO (Data Transfer Object) Usage 
 > - Swagger integrated   
+> - Logging with Logback
   
 
 Front-end
@@ -63,7 +64,7 @@ Front-end
 
 - Server UI with Thymeleaf => now moved to a proper Back-end
 - CSRF interceptor => doesn't have a usage when using JWT on SPA
-- 
+
 #### Comments
 
 - I know JWT shouldn't be on queryParam, but I lack expertise to implement it as a cookie while making formLogin work at the same time (the id was invalid on oauth side): current hint would be to learn more about the @Order annotation and make 2 WebSecurityConfigurerAdapter
@@ -77,5 +78,6 @@ Front-end
 
 ### Others 
 
+*I understand that some of the technologies used might be overkill for a project like this, but it's a learning and testing project where I'm exploring how to configure and work with various tools.*  
 See Linked UI : https://github.com/Stickykenny/Overlaytd  
 Originated from this side-project : https://github.com/Stickykenny/Playground/tree/main/relaytd 
