@@ -1,48 +1,67 @@
-
 # server_port=9090
 
 # PostgreSQL
-spring :
+spring:
   application:
     name:
       relaytd
-  datasource :
-    url :
+  datasource:
+    url:
       /// ------- HIDDEN ------- ///
-    username :
+    username:
       /// ------- HIDDEN ------- ///
-    password :
+    password:
       /// ------- HIDDEN ------- ///
-  jpa :
-    hibernate :
+  jpa:
+    hibernate:
       ddl-auto:
         update
-    properties :
-      hibernate :
-        dialect :
+    properties:
+      hibernate:
+        dialect:
           org.hibernate.dialect.PostgreSQLDialect
-    database-platform :
+    database-platform:
       org.hibernate.dialect.PostgreSQLDialect
     show-sql:
       true  # Show SQL queries in the console
-
-
+  security:
+    oauth2:
+      client: # Login Client
+        registration:
+          github:
+            client-id:
+              /// ------- HIDDEN ------- ///
+            client-secret:
+              /// ------- HIDDEN ------- ///
+          google:
+            client-id:
+              /// ------- HIDDEN ------- ///
+            client-secret:
+              /// ------- HIDDEN ------- ///
+        provider:
+          google:
+            authorization-uri: https://accounts.google.com/o/oauth2/auth
+            token-uri: https://oauth2.googleapis.com/token
 # swagger-ui custom path
+
 springdoc:
-  api-docs :
-    groups :
+  api-docs:
+    groups:
       enabled:
         true
     path:
       /v3/api-docs
-    enabled :
+    enabled:
       true
   swagger-ui:
+    csrf:
+      enabled:
+        true
     path:
       /swagger-ui.html
-    disable-swagger-default-url :
+    disable-swagger-default-url:
       true
-    url :
+    url:
       /v3/api-docs
     configUrl:
       /v3/api-docs/swagger-config
@@ -57,5 +76,12 @@ logging:
   level:
     org:
       springframework:
-        security :
+        security:
           DEBUG
+        web:
+          INFO
+      hibernate:
+        INFO
+
+  config :
+    src\main\resources\logback.xml
