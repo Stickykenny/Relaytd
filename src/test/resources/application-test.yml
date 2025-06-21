@@ -1,0 +1,17 @@
+# add this on application-test.properties code
+spring:
+  datasource:
+    username: sa
+    url: jdbc:h2:mem:public
+    driverClassName: org.h2.Driver
+    password: password
+  sql:
+    init:
+      mode: always
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    defer-datasource-initialization: 'true'
+    show-sql: 'true'
+jpa:
+  hibernate:
+    ddl-auto: create
