@@ -84,4 +84,4 @@ logging:
         INFO
 
   config :
-    src\main\resources\logback.xml
+    src/main/resources/logback.xml
