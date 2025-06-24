@@ -1,7 +1,9 @@
 package me.stky.relaytd.api.model;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.persistence.*;
+import jakarta.persistence.EmbeddedId;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -11,6 +13,7 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @Entity
+@EqualsAndHashCode
 @Table(name = "connections")
 public class Astre {
 

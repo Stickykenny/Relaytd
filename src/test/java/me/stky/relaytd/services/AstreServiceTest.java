@@ -18,6 +18,7 @@ import java.time.LocalDate;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
@@ -60,7 +61,8 @@ public class AstreServiceTest {
         when(astreRepository.save(astre)).thenReturn(astre);
 
         var result = astreService.saveAstre(astre);
-        assertEquals(expectedAstre, result);
+        assertTrue(result.isPresent());
+        assertEquals(expectedAstre.get(), result.get());
     }
 
     @Test
@@ -116,13 +118,14 @@ public class AstreServiceTest {
         Astre astreCopy = astreDB.clone();
 
 
-        when(astreRepository.findById(oldID)).thenReturn(Optional.of(astre));
-        when(astreRepository.findById(newID)).thenReturn(Optional.empty());
+        lenient().when(astreRepository.findById(oldID)).thenReturn(Optional.of(astre)); // lenient here to ignore stubbing warning and not make it global
+        lenient().when(astreRepository.findById(newID)).thenReturn(Optional.empty());
         when(astreRepository.save(astreCopy)).thenReturn(astreCopy);
 
 
         Optional<Astre> result = astreService.updateAstreID(oldID, newID);
         assertEquals(Optional.of(astreDB), result);
+
     }
 
     @Test
