@@ -1,5 +1,6 @@
 package me.stky.relaytd.api.service;
 
+import lombok.extern.slf4j.Slf4j;
 import me.stky.relaytd.api.model.Astre;
 import me.stky.relaytd.api.model.AstreDTO;
 import me.stky.relaytd.api.model.AstreID;
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+@Slf4j
 @Service
 public class AstreServiceImpl implements AstreService {
 
@@ -33,6 +35,7 @@ public class AstreServiceImpl implements AstreService {
     public Optional<Astre> getAstreById(String type, String name) {
         return astreRepository.findById(new AstreID(type, name));
     }
+
 
     @Override
     public Optional<Astre> saveAstre(Astre astre) {
@@ -58,8 +61,11 @@ public class AstreServiceImpl implements AstreService {
 
     @Override
     public boolean deleteAstre(String type, String name) {
-        astreRepository.deleteById(new AstreID(type, name));
-        return astreRepository.findById(new AstreID(type, name)).isEmpty();
+        if (astreRepository.findById(new AstreID(type, name)).isPresent()) {
+            astreRepository.deleteById(new AstreID(type, name));
+            log.info(type + "---" + name + "  got deleted");
+        }
+        return true;
     }
 
     @Override

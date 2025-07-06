@@ -9,8 +9,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -27,14 +28,13 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import javax.crypto.spec.SecretKeySpec;
 import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -56,7 +56,6 @@ public class SecurityConfig {
     public JwtLoginSuccessHandler jwtLoginSuccessHandler(JWTService jwtService) {
         return new JwtLoginSuccessHandler(jwtService);
     }
-
 
 
     @Bean
@@ -98,19 +97,17 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
-
-                //  TODO Currently working on csrf from angular
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable) // SPA w/ JWT doesn't need csrf => csrf is for cookie / server-rendered pages
-                //.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // for JWT
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/csrf/token").permitAll()
-                        .requestMatchers("/login","/auth/**", "/logout", "/resources/**", "/static/**", "/css/**", "/js/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/login2").permitAll()
+                        //.requestMatchers(HttpMethod.GET, "/csrf/token").permitAll() // unused
+                        .requestMatchers("/auth/**", "/logout", "/resources/**", "/static/**", "/css/**").permitAll()
                         .anyRequest().authenticated())
 
                 .oauth2Login(oauth -> oauth.successHandler(jwtLoginSuccessHandler(new JWTService(jwtEncoder()))))
-
                 .oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults())) // Contains protected ressources // incompatible with formlogin
                 // Authentification server : provide ID : ex : Github, FB, Google
                 // Client Server is still Spring Boot - The Frontend calls the backend that ask the auth
@@ -123,7 +120,6 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         return http
-                //  TODO Currently working on csrf from angular
                 // authorize PUT and POST
                 //.csrf(csrf -> csrf
                 //        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
@@ -166,7 +162,7 @@ public class SecurityConfig {
         return new InMemoryUserDetailsManager(user);
     }
 
-    @Bean
+    /*@Bean
     public AuthenticationManager authenticationManager(HttpSecurity http, BCryptPasswordEncoder bCryptPasswordEncoder) throws Exception {
 
         AuthenticationManagerBuilder authenticationManagerBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
@@ -179,7 +175,35 @@ public class SecurityConfig {
 
         authenticationManagerBuilder.userDetailsService(customUserDetailsService).passwordEncoder(bCryptPasswordEncoder);
         return authenticationManagerBuilder.getOrBuild();
-    }
+    }*/
 
+    /*
+    // Configure is deprecated since 5.7 spring security
+    https://spring.io/blog/2022/02/21/spring-security-without-the-websecurityconfigureradapter
+    @Bean
+    public void configure(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception {
+        authenticationManagerBuilder.inMemoryAuthentication().userDetailsPasswordManager(userDetailsService());
+        authenticationManagerBuilder.userDetailsService(userDetailsService());
+
+
+        authenticationManagerBuilder.userDetailsService(customUserDetailsService).passwordEncoder(new BCryptPasswordEncoder());
+        //return authenticationManagerBuilder.getOrBuild();
+    }*/
+
+    @Bean
+    public AuthenticationManager authenticationManager() {
+
+        // DB auth
+        DaoAuthenticationProvider dbProvider = new DaoAuthenticationProvider();
+        dbProvider.setUserDetailsService(customUserDetailsService);
+        dbProvider.setPasswordEncoder(new BCryptPasswordEncoder());
+
+        // in-Memory auth
+        DaoAuthenticationProvider inMemoryProvider = new DaoAuthenticationProvider();
+        inMemoryProvider.setUserDetailsService(userDetailsService());
+        inMemoryProvider.setPasswordEncoder(new BCryptPasswordEncoder());
+
+        return new ProviderManager(List.of(inMemoryProvider, dbProvider)); // First In-memory
+    }
 
 }

@@ -1,10 +1,16 @@
 package me.stky.relaytd.api.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
+import me.stky.relaytd.api.model.LoginRequest;
 import me.stky.relaytd.api.service.JWTService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -24,24 +30,45 @@ import java.util.Map;
 
 @Controller
 @CrossOrigin
+@Slf4j
 public final class LoginController {
 
     @Autowired
     private OAuth2AuthorizedClientService authorizedClientService;
 
+    @Autowired
+    private AuthenticationManager authenticationManager;
+
     private JWTService jwtService;
 
-    public LoginController(JWTService jwtService, OAuth2AuthorizedClientService authorizedClientService) {
+    public LoginController(JWTService jwtService, OAuth2AuthorizedClientService authorizedClientService, AuthenticationManager authenticationManager) {
         this.jwtService = jwtService;
         this.authorizedClientService = authorizedClientService;
+        this.authenticationManager = authenticationManager;
     }
 
-    @PostMapping("/login")
+    //public String getToken(Authentication authentication) {
+
+    @PostMapping("/login2")
     @ResponseBody // Required else thymeleaf search for it's template
-    public String getToken(Authentication authentication) {
-        String token = jwtService.generateToken(authentication);
-        return token;
+    public ResponseEntity<String> login(@RequestBody LoginRequest loginRequest) {
+        log.info("Connecting using Form login");
+
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            loginRequest.getUsername(), loginRequest.getPassword())
+            );
+
+            String token = jwtService.generateToken(authentication);
+            return ResponseEntity.ok(token);
+
+        } catch (AuthenticationException e) {
+            log.info("login failed");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+        }
     }
+
 /*
 // Old endpoint with Thymeleaf
     @GetMapping("/login")
@@ -68,8 +95,8 @@ public final class LoginController {
 
  */
 
-/*
-// Old endpoint with Thymeleaf
+
+    // Old endpoint with Thymeleaf
     @GetMapping("/homepage")
     String getHomepage(HttpServletRequest request, Model model) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -89,7 +116,7 @@ public final class LoginController {
 
         return "filler";
 
-    }*/
+    } // */
 
 
     @GetMapping("/")
