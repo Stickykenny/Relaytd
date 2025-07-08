@@ -1,6 +1,7 @@
 package me.stky.relaytd.api.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import me.stky.relaytd.api.model.Astre;
 import me.stky.relaytd.api.model.AstreDTO;
 import me.stky.relaytd.api.model.AstreID;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@SecurityRequirement(name = "BearerAuthentication")
 @RequestMapping("/api/astres")
 public final class AstreController {
 
