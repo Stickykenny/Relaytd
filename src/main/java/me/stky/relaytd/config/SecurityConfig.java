@@ -2,9 +2,11 @@ package me.stky.relaytd.config;
 
 
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
+import me.stky.relaytd.api.service.AuthentificationService;
 import me.stky.relaytd.api.service.CustomUserDetailsService;
 import me.stky.relaytd.api.service.JWTService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -41,11 +43,13 @@ import java.util.List;
 public class SecurityConfig {
 
 
-    //private String jwtKey = "your-256-bit-secret-key-that-is-at-least-32-characters";
-    private String jwtKey = "toupdate.....99999999999999999999999999999";
+    @Value("${spring.security.jwt.key}")
+    private String jwtKey;
 
     @Autowired
     private CustomUserDetailsService customUserDetailsService;
+    @Autowired
+    private AuthentificationService authentificationService;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -104,10 +108,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/login2").permitAll()
                         //.requestMatchers(HttpMethod.GET, "/csrf/token").permitAll() // unused
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").permitAll()
                         .requestMatchers("/auth/**", "/logout", "/resources/**", "/static/**", "/css/**").permitAll()
                         .anyRequest().authenticated())
 
-                .oauth2Login(oauth -> oauth.successHandler(jwtLoginSuccessHandler(new JWTService(jwtEncoder()))))
+                .oauth2Login(oauth -> oauth.successHandler(jwtLoginSuccessHandler(new JWTService(jwtEncoder(), authentificationService))))
                 .oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults())) // Contains protected ressources // incompatible with formlogin
                 // Authentification server : provide ID : ex : Github, FB, Google
                 // Client Server is still Spring Boot - The Frontend calls the backend that ask the auth
@@ -205,5 +210,4 @@ public class SecurityConfig {
 
         return new ProviderManager(List.of(inMemoryProvider, dbProvider)); // First In-memory
     }
-
 }
