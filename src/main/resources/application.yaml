@@ -1,6 +1,3 @@
-# server_port=9090
-
-# PostgreSQL
 spring:
   application:
     name:
@@ -42,7 +39,10 @@ spring:
           google:
             authorization-uri: https://accounts.google.com/o/oauth2/auth
             token-uri: https://oauth2.googleapis.com/token
-# swagger-ui custom path
+    jwt:
+      key: # "your-256-bit-secret-key-that-is-at-least-32-characters"
+        toupdate.....99999999999999999999999999999 # Yes, of course this isn't the real key
+
 
 springdoc:
   api-docs:
@@ -69,8 +69,10 @@ springdoc:
 
 server:
   error:
-    include-message: always
-    include-binding-errors: always
+    include-message:
+      always
+    include-binding-errors:
+      always
 
 logging:
   level:
@@ -82,6 +84,12 @@ logging:
           INFO
       hibernate:
         INFO
+    me:
+      INFO
 
-  config :
-    src/main/resources/logback.xml
+
+
+  config:
+    src\main\resources\logback.xml
+
+
