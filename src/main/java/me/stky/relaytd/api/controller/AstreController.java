@@ -9,6 +9,7 @@ import me.stky.relaytd.api.service.AstreService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,7 +17,7 @@ import java.util.List;
 @RestController
 @SecurityRequirement(name = "BearerAuthentication")
 @RequestMapping("/api/astres")
-public final class AstreController {
+public class AstreController {
 
     @Autowired
     AstreService astreService;
@@ -26,6 +27,7 @@ public final class AstreController {
         return new ResponseEntity<>("Welcome to the controller", HttpStatus.OK);
     }
 
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "Save an astre", description = "Save an astre, doesn't save if the ID is already used")
     @PostMapping("/astre")
     public ResponseEntity<Astre> saveAstre(@RequestBody Astre astre) {
@@ -49,6 +51,7 @@ public final class AstreController {
 
     }
 
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "Update an astre", description = "Update (or create) an astre using a type and name")
     @PutMapping("/astre")
     public ResponseEntity<Astre> update(@RequestBody AstreDTO astreDTO) {
@@ -57,6 +60,7 @@ public final class AstreController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "Delete an astre", description = "Delete using the type and name")
     @DeleteMapping("/{type}/{name}")
     public ResponseEntity<Object> deleteAstre(@PathVariable("type") String type, @PathVariable("name") String name) {
@@ -66,6 +70,7 @@ public final class AstreController {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "Save/Update multiples astre", description = "Mass update")
     @PostMapping("/astres")
     public ResponseEntity<List<Astre>> upsertAstres(@RequestBody List<AstreDTO> astresDTO) {
@@ -78,6 +83,7 @@ public final class AstreController {
     }
 
 
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "Update an Astre's ID", description = "Update an Astre's ID, remove the old one")
     @PutMapping("/{type}/{name}")
     public ResponseEntity<Astre> updateAstreID(@PathVariable("type") String type, @PathVariable("name") String name, @RequestBody AstreID newAstreID) {
