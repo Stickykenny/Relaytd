@@ -28,7 +28,9 @@ public class AstreServiceImpl implements AstreService {
 
     @Override
     public List<Astre> getAllAstre() {
-        return astreRepository.findAll().stream().toList();
+        return
+                astreRepository.getAllByTopic("topic").stream().toList();
+        //astreRepository.findAll().stream().toList();
     }
 
     @Override
