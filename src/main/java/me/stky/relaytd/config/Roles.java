@@ -13,4 +13,9 @@ public enum Roles {
         return new SimpleGrantedAuthority(role.name());
     }
 
+    public String getAuthorityName() {
+        String prefix = "ROLE_";
+        return this.toString().replace(prefix, "");
+    }
+
 }
