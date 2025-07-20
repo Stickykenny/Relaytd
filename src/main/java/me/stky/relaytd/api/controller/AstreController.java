@@ -27,7 +27,7 @@ public class AstreController {
         return new ResponseEntity<>("Welcome to the controller", HttpStatus.OK);
     }
 
-    @PreAuthorize("hasAuthority('ROLE_USER')")
+    @PreAuthorize("hasAuthority('ROLE_USER')") // TODO : Change this in prod
     @Operation(summary = "Save an astre", description = "Save an astre, doesn't save if the ID is already used")
     @PostMapping("/astre")
     public ResponseEntity<Astre> saveAstre(@RequestBody Astre astre) {
@@ -36,6 +36,7 @@ public class AstreController {
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
     }
 
+    @PreAuthorize("hasAuthority('ROLE_VISITOR')")
     @Operation(summary = "Get all astres", description = "Get all astres")
     @GetMapping("/getall")
     public ResponseEntity<List<Astre>> getAstres() {
@@ -51,7 +52,7 @@ public class AstreController {
 
     }
 
-    @PreAuthorize("hasAuthority('ROLE_USER')")
+    @PreAuthorize("hasAuthority('ROLE_USER')") // TODO : Change this in prod
     @Operation(summary = "Update an astre", description = "Update (or create) an astre using a type and name")
     @PutMapping("/astre")
     public ResponseEntity<Astre> update(@RequestBody AstreDTO astreDTO) {
@@ -60,7 +61,7 @@ public class AstreController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @PreAuthorize("hasAuthority('ROLE_USER')")
+    @PreAuthorize("hasAuthority('ROLE_USER')") // TODO : Change this in prod
     @Operation(summary = "Delete an astre", description = "Delete using the type and name")
     @DeleteMapping("/{type}/{name}")
     public ResponseEntity<Object> deleteAstre(@PathVariable("type") String type, @PathVariable("name") String name) {
@@ -70,7 +71,7 @@ public class AstreController {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
-    @PreAuthorize("hasAuthority('ROLE_USER')")
+    @PreAuthorize("hasAuthority('ROLE_USER')") // TODO : Change this in prod
     @Operation(summary = "Save/Update multiples astre", description = "Mass update")
     @PostMapping("/astres")
     public ResponseEntity<List<Astre>> upsertAstres(@RequestBody List<AstreDTO> astresDTO) {
@@ -83,7 +84,7 @@ public class AstreController {
     }
 
 
-    @PreAuthorize("hasAuthority('ROLE_USER')")
+    @PreAuthorize("hasAuthority('ROLE_USER')") // TODO : Change this in prod
     @Operation(summary = "Update an Astre's ID", description = "Update an Astre's ID, remove the old one")
     @PutMapping("/{type}/{name}")
     public ResponseEntity<Astre> updateAstreID(@PathVariable("type") String type, @PathVariable("name") String name, @RequestBody AstreID newAstreID) {

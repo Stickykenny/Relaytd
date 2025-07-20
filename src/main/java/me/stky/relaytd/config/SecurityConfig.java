@@ -70,11 +70,11 @@ public class SecurityConfig {
     public InMemoryUserDetailsManager userDetailsService() {
         UserDetails user1 = User.withUsername("visitor")
                 .password(passwordEncoder().encode("password"))
-                .roles("USER")
+                .roles(Roles.ROLE_USER.name())
                 .build();
         UserDetails admin = User.withUsername("visitor2")
                 .password(passwordEncoder().encode("password"))
-                .roles(new String[]{"NO_ROLE", "EMPTY"})
+                .roles(new String[]{Roles.ROLE_VISITOR.name(), "EMPTY"})
                 .build();
         return new InMemoryUserDetailsManager(user1, admin);
     }

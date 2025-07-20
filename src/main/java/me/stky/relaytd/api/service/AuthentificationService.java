@@ -75,7 +75,6 @@ public class AuthentificationService {
     }
 
     public String getUserInfo(Principal user, @AuthenticationPrincipal OidcUser oidcUser) {
-        System.out.println("in userInfo");
         StringBuffer userInfo = new StringBuffer();
         if (user instanceof UsernamePasswordAuthenticationToken) {
             System.out.println("session-based");

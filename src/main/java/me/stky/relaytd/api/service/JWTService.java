@@ -2,6 +2,7 @@ package me.stky.relaytd.api.service;
 
 
 import lombok.extern.slf4j.Slf4j;
+import me.stky.relaytd.config.Roles;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -43,8 +44,8 @@ public class JWTService {
         List<String> authorities = new ArrayList<>();
         if (authentication instanceof OAuth2AuthenticationToken) {
             List<GrantedAuthority> newAuthorities = List.of(
-                    new SimpleGrantedAuthority("ROLE_OAUTH_USER"),
-                    new SimpleGrantedAuthority("ROLE_USER"),
+                    new SimpleGrantedAuthority(Roles.ROLE_OAUTH_USER.name()),
+                    Roles.toAuthority(Roles.ROLE_USER), // Showing both method to create authority
                     new SimpleGrantedAuthority("ROLE_customedroleforgiggles")
             );
             authorities = newAuthorities.stream()
