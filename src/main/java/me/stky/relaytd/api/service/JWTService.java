@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -38,26 +39,27 @@ public class JWTService {
      * @param authentication
      * @return
      */
-    public String createRoles(Authentication authentication) {
-        String authoritiesString = "";
+    public List<String> createRoles(Authentication authentication) {
+        List<String> authorities = new ArrayList<>();
         if (authentication instanceof OAuth2AuthenticationToken) {
-            List<GrantedAuthority> authorities = List.of(
-                    //new SimpleGrantedAuthority("ROLE_OAUTH_USER"),
-                    new SimpleGrantedAuthority("ROLE_USER")//,
-                    //new SimpleGrantedAuthority("ROLE_customedlogicforgiggles")
+            List<GrantedAuthority> newAuthorities = List.of(
+                    new SimpleGrantedAuthority("ROLE_OAUTH_USER"),
+                    new SimpleGrantedAuthority("ROLE_USER"),
+                    new SimpleGrantedAuthority("ROLE_customedroleforgiggles")
             );
-            authoritiesString = authorities.stream()
+            authorities = newAuthorities.stream()
                     .map(GrantedAuthority::getAuthority)
-                    .collect(Collectors.joining(","));
+                    .collect(Collectors.toList());
         } else if (authentication instanceof UsernamePasswordAuthenticationToken) {
-            authoritiesString = authentication.getAuthorities().stream()
+            authorities = authentication.getAuthorities().stream()
                     .map(GrantedAuthority::getAuthority)
-                    .collect(Collectors.joining(","));
+                    .collect(Collectors.toList());
         } else {
             throw new IllegalStateException("Authentification token isn't supported");
         }
-        log.debug("Roles attributed : " + authoritiesString);
-        return authoritiesString;
+        log.debug("Roles attributed : " + authorities);
+
+        return authorities;
     }
 
     /**

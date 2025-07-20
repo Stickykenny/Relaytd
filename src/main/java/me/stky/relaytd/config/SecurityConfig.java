@@ -74,7 +74,7 @@ public class SecurityConfig {
                 .build();
         UserDetails admin = User.withUsername("visitor2")
                 .password(passwordEncoder().encode("password"))
-                .roles("NO_ROLE")
+                .roles(new String[]{"NO_ROLE", "EMPTY"})
                 .build();
         return new InMemoryUserDetailsManager(user1, admin);
     }
