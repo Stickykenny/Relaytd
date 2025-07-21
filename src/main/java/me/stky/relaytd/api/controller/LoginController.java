@@ -12,21 +12,22 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.core.oidc.user.OidcUser;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
-import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 @Controller
 @CrossOrigin
 @Slf4j
-public final class LoginController {
+public class LoginController {
 
 
     @Autowired
@@ -65,6 +66,57 @@ public final class LoginController {
         }
     }
 
+    /***
+     * This endpoint will try to return as much information found on the user
+     * !! This is not safe and can display private information !!
+     *
+     * @param request
+     * @param authentication
+     * @return
+     */
+    @GetMapping("/userDetails")
+    @ResponseBody
+    ResponseEntity<Map<String, Object>> getHomepage(HttpServletRequest request, Authentication authentication) {
+
+        Map<String, Object> details = new HashMap<>();
+        Map<String, Object> requestDetails = new HashMap<>();
+        // Get User-Agent and Client IP
+        requestDetails.put("userAgent", request.getHeader("User-Agent"));
+        requestDetails.put("host", request.getHeader("host"));
+        requestDetails.put("connection", request.getHeader("connection"));
+        requestDetails.put("authorization", request.getHeader("authorization"));
+        requestDetails.put("referer", request.getHeader("referer"));
+        requestDetails.put("acceptLanguage", request.getHeader("accept-language"));
+        requestDetails.put("platform", request.getHeader("sec-ch-ua-platform"));
+        requestDetails.put("clientIp", request.getRemoteAddr());
+        requestDetails.put("locale", request.getLocale().toString());
+        requestDetails.put("localAddress", request.getLocalAddr());
+        requestDetails.put("localName", request.getLocalName());
+        requestDetails.put("localPort", String.valueOf(request.getLocalPort()));
+        requestDetails.put("remoteUser", request.getRemoteUser());
+        requestDetails.put("remoteHost", request.getRemoteHost());
+        requestDetails.put("remoteAddress", request.getRemoteAddr());
+        requestDetails.put("remotePort", String.valueOf(request.getRemotePort()));
+        requestDetails.put("serverPort", String.valueOf(request.getServerPort()));
+        requestDetails.put("serverName", request.getServerName());
+        requestDetails.put("protocol", request.getProtocol());
+        Stream<String> spliterator
+                = StreamSupport.stream(
+                Spliterators.spliteratorUnknownSize(request.getHeaderNames().asIterator(), Spliterator.ORDERED),
+                false);
+        requestDetails.put("requestHeaders", spliterator.collect(Collectors.joining(" || ")));
+        details.put("requests", requestDetails);
+
+        details.put("name", authentication.getName());
+        details.put("autorization", authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.joining(" -- ")));
+        details.put("principal", authentication.getPrincipal().toString());
+
+        details.put("authentification", authentificationService.getUserInfo(authentication));
+        return ResponseEntity.ok(details);
+
+    }
+
+
 /*
 // Old endpoint with Thymeleaf
     @GetMapping("/login")
@@ -88,10 +140,6 @@ public final class LoginController {
         return "login";
     }
 
-
- */
-
-
     // Old endpoint with Thymeleaf
     @GetMapping("/homepage")
     String getHomepage(HttpServletRequest request, Model model) {
@@ -113,24 +161,4 @@ public final class LoginController {
         return "filler";
 
     } // */
-
-
-    @GetMapping("/")
-    @ResponseBody // Required else thymeleaf search for it's template
-    public String getGithub(Principal user) {
-        return "Welcome, ";//+ user.toString() + "\n http://localhost:8080/userInfo ";
-    }
-
-
-    /**
-     * Show informations that can be fetched : DO NOT USE IT TO SHOW EVERYONE / HIDE CONFIDENTIAL DATA
-     *
-     * @param user
-     * @return
-     */
-    @GetMapping("/userInfo")
-    @ResponseBody // Required else thymeleaf search for it's template
-    public String G(Principal user, @AuthenticationPrincipal OidcUser oidcUser) {
-        return authentificationService.getUserInfo(user, oidcUser);
-    }
 }

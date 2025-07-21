@@ -2,16 +2,16 @@ package me.stky.relaytd.api.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 
 import java.security.Principal;
+import java.util.HashMap;
 import java.util.Map;
 
 @Service
@@ -74,16 +74,22 @@ public class AuthentificationService {
         return protectedInfo;
     }
 
-    public String getUserInfo(Principal user, @AuthenticationPrincipal OidcUser oidcUser) {
-        StringBuffer userInfo = new StringBuffer();
+    public Map<String, String> getUserInfo(Principal user) {
+        Map<String, String> authDetails = new HashMap<>();
         if (user instanceof UsernamePasswordAuthenticationToken) {
             System.out.println("session-based");
-            userInfo.append(getUsernamePasswordLoginInfo(user));
+            authDetails.put("UsernamePasswordLoginInfo", (getUsernamePasswordLoginInfo(user).toString()));
         } else if (user instanceof OAuth2AuthenticationToken) {
             System.out.println("oauth");
-            userInfo.append(getOAuth2LoginInfo(user));
+            authDetails.put("OAuth2LoginInfo", (getOAuth2LoginInfo(user)).toString());
+        } else if (user instanceof JwtAuthenticationToken) {
+            System.out.println("jwt token");
+            authDetails.put("name", user.getName());
+            authDetails.put("authorities", ((JwtAuthenticationToken) user).getAuthorities().toString());
+            authDetails.put("tokenAttributes", ((JwtAuthenticationToken) user).getTokenAttributes().toString());
+        } else {
+            throw new IllegalStateException("Login method not taken into account");
         }
-        System.out.println(userInfo.toString());
-        return userInfo.toString();
+        return authDetails;
     }
 }

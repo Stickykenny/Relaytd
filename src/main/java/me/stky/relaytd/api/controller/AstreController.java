@@ -36,7 +36,7 @@ public class AstreController {
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
     }
 
-    @PreAuthorize("hasAuthority('ROLE_VISITOR')")
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "Get all astres", description = "Get all astres")
     @GetMapping("/getall")
     public ResponseEntity<List<Astre>> getAstres() {
