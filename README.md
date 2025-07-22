@@ -71,6 +71,8 @@ Front-end
   make 2 WebSecurityConfigurerAdapter
 - Looking into ways to introduce custom animations and procedural animations with layers into the web-app
 - I am leaving the comments as they are a learning points in this project
+- Changed Path Variables endpoints to Endpoint using Request Body, Path Variables are too restricted due to URI (no "/",
+  no spaces)
 
 #### Plan
 

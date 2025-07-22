@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import me.stky.relaytd.api.model.Astre;
 import me.stky.relaytd.api.model.AstreDTO;
 import me.stky.relaytd.api.model.AstreID;
+import me.stky.relaytd.api.model.UpdateAstreIDRequest;
 import me.stky.relaytd.api.service.AstreService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -44,13 +45,23 @@ public class AstreController {
     }
 
     @Operation(summary = "Get an astre", description = "Get an astre using a type and name")
+    @GetMapping("/astre")
+    public ResponseEntity<Astre> getAstre(@RequestBody AstreID astreID) {
+        return astreService.getAstreById(astreID.getType(), astreID.getName())
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    /*
+    // This method is kept for archiving purpose : Using Path Variable
+
+    @Operation(summary = "Get an astre", description = "Get an astre using a type and name")
     @GetMapping("/{type}/{name}")
     public ResponseEntity<Astre> getAstre(@PathVariable("type") String type, @PathVariable("name") String name) {
         return astreService.getAstreById(type, name)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
-
-    }
+    }*/
 
     @PreAuthorize("hasAuthority('ROLE_USER')") // TODO : Change this in prod
     @Operation(summary = "Update an astre", description = "Update (or create) an astre using a type and name")
@@ -63,9 +74,9 @@ public class AstreController {
 
     @PreAuthorize("hasAuthority('ROLE_USER')") // TODO : Change this in prod
     @Operation(summary = "Delete an astre", description = "Delete using the type and name")
-    @DeleteMapping("/{type}/{name}")
-    public ResponseEntity<Object> deleteAstre(@PathVariable("type") String type, @PathVariable("name") String name) {
-        if (astreService.deleteAstre(type, name)) {
+    @DeleteMapping("/astre")
+    public ResponseEntity<Object> deleteAstre(@RequestBody AstreID astreID) {
+        if (astreService.deleteAstre(astreID.getType(), astreID.getName())) {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -86,9 +97,9 @@ public class AstreController {
 
     @PreAuthorize("hasAuthority('ROLE_USER')") // TODO : Change this in prod
     @Operation(summary = "Update an Astre's ID", description = "Update an Astre's ID, remove the old one")
-    @PutMapping("/{type}/{name}")
-    public ResponseEntity<Astre> updateAstreID(@PathVariable("type") String type, @PathVariable("name") String name, @RequestBody AstreID newAstreID) {
-        return astreService.updateAstreID(new AstreID(type, name), newAstreID)
+    @PutMapping("astreid")
+    public ResponseEntity<Astre> updateAstreID(@RequestBody UpdateAstreIDRequest updateRequest) {
+        return astreService.updateAstreID(updateRequest.getOldID(), updateRequest.getNewID())
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
     }
