@@ -1,5 +1,7 @@
 package me.stky.relaytd.api.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.extern.slf4j.Slf4j;
 import me.stky.relaytd.api.model.Astre;
 import me.stky.relaytd.api.model.AstreDTO;
@@ -29,8 +31,8 @@ public class AstreServiceImpl implements AstreService {
     @Override
     public List<Astre> getAllAstre() {
         return
-                astreRepository.getAllByTopic("topic").stream().toList();
-        //astreRepository.findAll().stream().toList();
+                //astreRepository.getAllByTopic("topic").stream().toList();
+                astreRepository.findAll().stream().toList();
     }
 
     @Override
@@ -63,9 +65,20 @@ public class AstreServiceImpl implements AstreService {
 
     @Override
     public boolean deleteAstre(String type, String name) {
-        if (astreRepository.findById(new AstreID(type, name)).isPresent()) {
+        Optional<Astre> potentialAstre = astreRepository.findById(new AstreID(type, name));
+        if (potentialAstre.isPresent()) {
             astreRepository.deleteById(new AstreID(type, name));
             log.info(type + "---" + name + "  got deleted");
+
+            // !Never log confidential informations
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.registerModule(new JavaTimeModule());
+            try {
+                String jsonString = mapper.writeValueAsString(potentialAstre.get());
+                log.debug("Deleted this entry : " + jsonString);
+            } catch (Exception e) {
+                log.error("Error mapping deleted entry into json", e);
+            }
         }
         return true;
     }
