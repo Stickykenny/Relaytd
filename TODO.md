@@ -26,3 +26,4 @@ _Features already implemented may appear here_
 ## > Others
 
 - [x] Make a proper todo features to implement
+- [ ] Define a design for the web-app 

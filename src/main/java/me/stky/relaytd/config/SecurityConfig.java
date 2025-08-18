@@ -134,7 +134,8 @@ public class SecurityConfig {
                 .oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults())) // Contains protected ressources // incompatible with formlogin
                 // Authentification server : provide ID : ex : Github, FB, Google
                 // Client Server is still Spring Boot - The Frontend calls the backend that ask the auth
-                .httpBasic(Customizer.withDefaults()).build();
+                //.httpBasic(Customizer.withDefaults())
+                .build();
 
     }
 

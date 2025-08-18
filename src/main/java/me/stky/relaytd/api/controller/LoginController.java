@@ -13,7 +13,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -24,7 +23,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-@Controller
+@RestController
 @CrossOrigin
 @Slf4j
 public class LoginController {
@@ -58,6 +57,7 @@ public class LoginController {
             );
 
             String token = jwtService.generateToken(authentication);
+            System.out.println(token);
             return ResponseEntity.ok(token);
 
         } catch (AuthenticationException e) {
