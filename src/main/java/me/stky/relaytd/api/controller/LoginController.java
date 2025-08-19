@@ -1,12 +1,15 @@
 package me.stky.relaytd.api.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import me.stky.relaytd.api.model.LoginRequest;
 import me.stky.relaytd.api.service.AuthentificationService;
 import me.stky.relaytd.api.service.JWTService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -15,6 +18,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Spliterator;
@@ -47,7 +51,8 @@ public class LoginController {
 
     @PostMapping("/login2")
     @ResponseBody // Required else thymeleaf search for it's template
-    public ResponseEntity<String> login(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<String> login(@RequestBody LoginRequest loginRequest,
+                                        HttpServletResponse response) {
         log.info("Connecting using Form login");
 
         try {
@@ -57,9 +62,18 @@ public class LoginController {
             );
 
             String token = jwtService.generateToken(authentication);
-            System.out.println(token);
-            return ResponseEntity.ok(token);
-
+            ResponseCookie cookie = ResponseCookie.from("jwt", token)
+                    .httpOnly(true)
+                    .secure(true)
+                    .path("/")
+                    .maxAge(Duration.ofMinutes(10))
+                    .sameSite("Lax") // or "Strict" or "None" or "Lax"
+                    .build();
+            log.debug(cookie.toString());
+            response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                    .body("Login successful");
         } catch (AuthenticationException e) {
             log.info("login failed");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
