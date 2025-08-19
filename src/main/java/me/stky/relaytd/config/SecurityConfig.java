@@ -33,6 +33,7 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -58,6 +59,11 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public JwtCookieAuthenticationFilter jwtAuthFilter(JWTService jwtService) {
+        return new JwtCookieAuthenticationFilter(jwtService);
     }
 
     @Bean
@@ -87,9 +93,7 @@ public class SecurityConfig {
     @Bean
     public JwtDecoder jwtDecoder() {
         SecretKeySpec secretKey = new SecretKeySpec(this.jwtKey.getBytes(), 0, this.jwtKey.getBytes().length, "HmacSHA256");
-
         var decoder = NimbusJwtDecoder.withSecretKey(secretKey).macAlgorithm(MacAlgorithm.HS256).build();
-
         return decoder;
     }
 
@@ -125,16 +129,15 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/login2").permitAll()
-                        //.requestMatchers(HttpMethod.GET, "/csrf/token").permitAll() // unused
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").permitAll()
                         .requestMatchers("/auth/**", "/logout", "/resources/**", "/static/**", "/css/**").permitAll()
                         .anyRequest().authenticated())
 
+                .addFilterBefore(jwtAuthFilter(new JWTService(jwtEncoder(), authentificationService)), UsernamePasswordAuthenticationFilter.class)
                 .oauth2Login(oauth -> oauth.successHandler(jwtLoginSuccessHandler(new JWTService(jwtEncoder(), authentificationService))))
                 .oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults())) // Contains protected ressources // incompatible with formlogin
                 // Authentification server : provide ID : ex : Github, FB, Google
                 // Client Server is still Spring Boot - The Frontend calls the backend that ask the auth
-                //.httpBasic(Customizer.withDefaults())
                 .build();
 
     }

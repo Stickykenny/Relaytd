@@ -54,7 +54,7 @@ Front-end
 - Spring Security Filter Chain : CORS and role-based access
 - User Authentification with Database and In-Memory
 - OAuth 2.0 with Github or Google
-- JWT token generation and requirement
+- JWT token generation and requirement through cookies (http-only)
 - CSRF is disabled and not needed but implementation is commented and still available to see
 
 </div>
@@ -66,9 +66,6 @@ Front-end
 
 #### Comments
 
-- I know JWT shouldn't be on queryParam, tried as a cookie while making formLogin work at
-  the same time (the id was invalid on oauth side): current hint would be to learn more about the @Order annotation and
-  make 2 WebSecurityConfigurerAdapter
 - Looking into ways to introduce custom animations and procedural animations with layers into the web-app
 - I am leaving the comments as they are a learning points in this project
 - Changed Path Variables endpoints to Endpoint using Request Body, Path Variables are too restricted due to URI (no "/",
