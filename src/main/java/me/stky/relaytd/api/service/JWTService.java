@@ -1,10 +1,10 @@
 package me.stky.relaytd.api.service;
 
 
-import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import lombok.extern.slf4j.Slf4j;
 import me.stky.relaytd.config.Roles;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -15,6 +15,7 @@ import org.springframework.security.oauth2.jwt.*;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.spec.SecretKeySpec;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -87,8 +88,14 @@ public class JWTService {
         return this.jwtEncoder.encode(jwtEncoderParameters).getTokenValue();
     }
 
-    public JwtEncoder jwtEncoder() {
-        return new NimbusJwtEncoder(new ImmutableSecret<>(this.jwtKey.getBytes()));
+    public ResponseCookie generateCookie(String jwtToken) {
+        return ResponseCookie.from("jwt", jwtToken)
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(Duration.ofHours(1))
+                .sameSite("Lax") // or "Strict" or "None" or "Lax"
+                .build();
     }
 
     public JwtDecoder jwtDecoder() {

@@ -18,7 +18,6 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Spliterator;
@@ -62,13 +61,8 @@ public class LoginController {
             );
 
             String token = jwtService.generateToken(authentication);
-            ResponseCookie cookie = ResponseCookie.from("jwt", token)
-                    .httpOnly(true)
-                    .secure(true)
-                    .path("/")
-                    .maxAge(Duration.ofMinutes(10))
-                    .sameSite("Lax") // or "Strict" or "None" or "Lax"
-                    .build();
+            ResponseCookie cookie = jwtService.generateCookie(token);
+
             log.debug(cookie.toString());
             response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
             return ResponseEntity.ok()

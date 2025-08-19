@@ -10,7 +10,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
 import java.io.IOException;
-import java.time.Duration;
 
 
 @Slf4j
@@ -29,18 +28,11 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
 
         log.info("Connecting using OAuth");
         String jwt = jwtService.generateToken(authentication);
-        ResponseCookie cookie = ResponseCookie.from("jwt", jwt)
-                .httpOnly(true)
-                .secure(true)
-                .path("/")
-                .maxAge(Duration.ofMinutes(10))
-                .sameSite("Lax") // or "Strict" or "None" or "Lax"
-                .build();
+        ResponseCookie cookie = jwtService.generateCookie(jwt);
         log.debug(cookie.toString());
         response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
         // Redirect to Angular frontend
-        //response.sendRedirect("http://localhost:4200/oauth-callback/?token=" + jwt); // Bad practice to put it so visible
         response.sendRedirect("http://localhost:4200/oauth-callback/");
     }
 }
