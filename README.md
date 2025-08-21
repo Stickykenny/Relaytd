@@ -2,10 +2,11 @@
 
 # Relaytd
 
+<img src=".github/preview/relaytd_banner_preview_0.png" alt="Relaytd Banner" title="Relaytd"/>
+
 (Back-end)  
 <> See Front-End ~~and usage~~ at [Overlaytd](https://github.com/Stickykenny/Overlaytd) <>
 
-On the theme of astral . . .  
 Web-application to centralize my own interests
 
 ### Main Technical Stack
@@ -73,7 +74,8 @@ Front-end
 
 #### Plan
 
-*I am still thinking about if I want to make public my todolist/desire to implement and learn new techs*
+*I am still thinking about if I want to make public all of my todolist/desire to implement and learn new techs*  
+Current shared (not updated): [Todo](TODO.md)
 
 ### Others
 
