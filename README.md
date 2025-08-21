@@ -1,6 +1,5 @@
 <div align="center">
 
-# Relaytd
 
 <img src=".github/preview/relaytd_banner_preview_0.png" alt="Relaytd Banner" title="Relaytd"/>
 
