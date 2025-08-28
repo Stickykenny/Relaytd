@@ -9,21 +9,35 @@ _Features already implemented may appear here_
 
 - [ ] Refresh token
 - [ ] AuthGuard
-- [ ] Cookie http-only JWT
+- [x] Cookie http-only JWT
 
 ## > App Features
 
-- [ ] Implement tree visualisation with D3js
-- [ ] Dynamic loading of tab enabling custom user component
-- [ ] Routing animation custom
-- [ ] Home screen with procedural animation
+- [x] Implement tree visualisation with D3js
+    - [ ] See below for [Front-End Features] more complete description of QOL
 - [ ] "Todo list" of quick tasks to complete ASAP, discord reading implementation to transmit task from mobile device
     - [ ] Python Django API to call discord bot ? Django ? Fast API ? Flask ?
     - [ ] Use discord.py
-- [ ] Lazy load based on route
+
+## > Back-End Features
+
 - [ ] Integrate with external tracking app
+- [ ] Register new users (but then which roles should they have ?)
+- [ ] Test how much informations can be gathered on the user without permissions
+
+## > Front-End Features
+
+- [x] Design a minor banner
+- [ ] Lazy load based on route
+- [ ] Home screen with procedural animation
+- [ ] Routing animation custom
+- [ ] Dynamic loading of tab enabling custom user component
+- [ ] Implement @ngrx/store-localstorage
+- [ ] Rainbow color each branch of the radial tree
+- [ ] Design UI for tooltip in radial tree
 
 ## > Others
 
 - [x] Make a proper todo features to implement
-- [ ] Define a design for the web-app 
+- [ ] Define a design for the web-app
+- [ ] Motion Graphics integration for UI and backgrounds ? 
