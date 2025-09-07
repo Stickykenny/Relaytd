@@ -53,8 +53,8 @@ public class LoginController {
 
     @PostMapping("/login2")
     @ResponseBody // Required else thymeleaf search for it's template
-    public ResponseEntity<String> login(@RequestBody LoginRequest loginRequest,
-                                        HttpServletResponse response) {
+    public ResponseEntity<Map<String, String>> login(@RequestBody LoginRequest loginRequest,
+                                                     HttpServletResponse response) {
         log.info("Connecting using Form login\n\n\n");
 
         try {
@@ -69,17 +69,17 @@ public class LoginController {
             response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
             return ResponseEntity.ok()
                     .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                    .body("Login successful");
+                    .body(Map.of("Message", "Login successful"));
         } catch (AuthenticationException e) {
             log.info("login failed");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("Message", "Invalid credentials"));
         }
     }
 
 
     @PostMapping("/logout")
     @ResponseBody // Required else thymeleaf search for it's template
-    public ResponseEntity<String> logout(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public ResponseEntity<Map<String, String>> logout() throws IOException {
 
         log.info("\n\n\nLogout endpoint\n");
         // Overwrite cookie
@@ -87,9 +87,10 @@ public class LoginController {
 
         ResponseCookie cookie = jwtService.invalidateCookie();
         //response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        log.info("\n\n\nGot to return\n");
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                .body("Logout successful");
+                .body(Map.of("Message", "Logout successful"));
     }
 
     /***
