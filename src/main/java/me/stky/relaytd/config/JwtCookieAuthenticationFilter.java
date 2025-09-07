@@ -6,11 +6,15 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import me.stky.relaytd.api.service.JWTService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -18,6 +22,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class JwtCookieAuthenticationFilter extends OncePerRequestFilter {
+
+    @Value("${spring.security.jwt.name}")
+    private String jwtName;
+
+    @Autowired
+    private JwtEncoder jwtEncoder;
+
+    @Autowired
+    private JwtDecoder jwtDecoder;
 
     private final JWTService jwtService;
 
@@ -32,11 +45,12 @@ public class JwtCookieAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         if (request.getCookies() != null) {
-            for (Cookie cookie : request.getCookies()) {
 
-                System.out.println(" cookie: " + cookie);
-                if ("jwt".equals(cookie.getName()) && jwtService.validateToken(cookie.getValue())) {
-                    Jwt jwt = jwtService.jwtDecoder().decode(cookie.getValue());
+
+            for (Cookie cookie : request.getCookies()) {
+                System.out.println(" cookie: " + cookie.getName() + " = " + cookie.getValue());
+                if (jwtName.equals(cookie.getName()) && jwtService.validateToken(cookie.getValue())) {
+                    Jwt jwt = jwtDecoder.decode(cookie.getValue());
                     String username = jwtService.extractUsername(cookie.getValue());
 
                     System.out.println("Extracted username: " + username);

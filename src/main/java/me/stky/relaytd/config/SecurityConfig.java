@@ -1,7 +1,6 @@
 package me.stky.relaytd.config;
 
 
-import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import me.stky.relaytd.api.service.AuthentificationService;
 import me.stky.relaytd.api.service.CustomUserDetailsService;
 import me.stky.relaytd.api.service.JWTService;
@@ -24,11 +23,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
@@ -38,7 +34,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import javax.crypto.spec.SecretKeySpec;
 import java.util.Arrays;
 import java.util.List;
 
@@ -55,6 +50,15 @@ public class SecurityConfig {
     private CustomUserDetailsService customUserDetailsService;
     @Autowired
     private AuthentificationService authentificationService;
+
+    @Autowired
+    private JWTService jwtService;
+
+    @Autowired
+    private JwtEncoder jwtEncoder;
+
+    @Autowired
+    private JwtDecoder jwtDecoder;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -83,18 +87,6 @@ public class SecurityConfig {
                 .roles(new String[]{Roles.ROLE_VISITOR.getAuthorityName(), "EMPTY"})
                 .build();
         return new InMemoryUserDetailsManager(user1, admin);
-    }
-
-    @Bean
-    public JwtEncoder jwtEncoder() {
-        return new NimbusJwtEncoder(new ImmutableSecret<>(this.jwtKey.getBytes()));
-    }
-
-    @Bean
-    public JwtDecoder jwtDecoder() {
-        SecretKeySpec secretKey = new SecretKeySpec(this.jwtKey.getBytes(), 0, this.jwtKey.getBytes().length, "HmacSHA256");
-        var decoder = NimbusJwtDecoder.withSecretKey(secretKey).macAlgorithm(MacAlgorithm.HS256).build();
-        return decoder;
     }
 
     @Bean
@@ -133,8 +125,8 @@ public class SecurityConfig {
                         .requestMatchers("/auth/**", "/logout", "/resources/**", "/static/**", "/css/**").permitAll()
                         .anyRequest().authenticated())
 
-                .addFilterBefore(jwtAuthFilter(new JWTService(jwtEncoder(), authentificationService)), UsernamePasswordAuthenticationFilter.class)
-                .oauth2Login(oauth -> oauth.successHandler(jwtLoginSuccessHandler(new JWTService(jwtEncoder(), authentificationService))))
+                .addFilterBefore(jwtAuthFilter(jwtService), UsernamePasswordAuthenticationFilter.class)
+                .oauth2Login(oauth -> oauth.successHandler(jwtLoginSuccessHandler(jwtService)))
                 .oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults())) // Contains protected ressources // incompatible with formlogin
                 // Authentification server : provide ID : ex : Github, FB, Google
                 // Client Server is still Spring Boot - The Frontend calls the backend that ask the auth

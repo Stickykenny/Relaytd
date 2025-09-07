@@ -14,7 +14,6 @@ import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.*;
 import org.springframework.stereotype.Service;
 
-import javax.crypto.spec.SecretKeySpec;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -26,16 +25,22 @@ import java.util.stream.Collectors;
 @Slf4j
 public class JWTService {
 
+
     @Value("${spring.security.jwt.key}")
     private String jwtKey;
 
-    private JwtEncoder jwtEncoder;
+    @Value("${spring.security.jwt.name}")
+    private String jwtName;
+
+    private final JwtEncoder jwtEncoder;
+    private final JwtDecoder jwtDecoder;
 
     private AuthentificationService authentificationService;
 
-    public JWTService(JwtEncoder jwtEncoder, AuthentificationService authentificationService) {
-        this.jwtEncoder = jwtEncoder;
+    public JWTService(AuthentificationService authentificationService, JwtEncoder jwtEncoder, JwtDecoder jwtDecoder) {
         this.authentificationService = authentificationService;
+        this.jwtEncoder = jwtEncoder;
+        this.jwtDecoder = jwtDecoder;
     }
 
     /**
@@ -89,29 +94,34 @@ public class JWTService {
     }
 
     public ResponseCookie generateCookie(String jwtToken) {
-        return ResponseCookie.from("jwt", jwtToken)
+        return ResponseCookie.from(jwtName, jwtToken)
                 .httpOnly(true)
                 .secure(true)
                 .path("/")
-                .maxAge(Duration.ofHours(1))
+                .maxAge(Duration.ofMinutes(60))
                 .sameSite("Lax") // or "Strict" or "None" or "Lax"
                 .build();
     }
 
-    public JwtDecoder jwtDecoder() {
-        SecretKeySpec secretKey = new SecretKeySpec(this.jwtKey.getBytes(), 0, this.jwtKey.getBytes().length, "HmacSHA256");
-        var decoder = NimbusJwtDecoder.withSecretKey(secretKey).macAlgorithm(MacAlgorithm.HS256).build();
-        return decoder;
+    public ResponseCookie invalidateCookie() {
+        return ResponseCookie.from(jwtName, "invalidated")
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(Duration.ofSeconds(1))
+                .sameSite("Lax") // or "Strict" or "None" or "Lax"
+                .build();
     }
 
+
     public String extractUsername(String token) {
-        Jwt jwt = jwtDecoder().decode(token);
+        Jwt jwt = this.jwtDecoder.decode(token);
         return jwt.getSubject();
     }
 
     public boolean validateToken(String token) {
         try {
-            jwtDecoder().decode(token);
+            this.jwtDecoder.decode(token);
             return true;
         } catch (JwtException e) {
             return false;
