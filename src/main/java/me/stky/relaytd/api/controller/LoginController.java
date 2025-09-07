@@ -63,7 +63,6 @@ public class LoginController {
             String token = jwtService.generateToken(authentication);
             ResponseCookie cookie = jwtService.generateCookie(token);
 
-            log.debug(cookie.toString());
             response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
             return ResponseEntity.ok()
                     .header(HttpHeaders.SET_COOKIE, cookie.toString())
@@ -72,6 +71,19 @@ public class LoginController {
             log.info("login failed");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
         }
+    }
+
+
+    @PostMapping("/logout")
+    @ResponseBody // Required else thymeleaf search for it's template
+    public ResponseEntity<Boolean> logout(HttpServletResponse response) {
+        log.info("Logout endpoint");
+        // Overwrite cookie
+        ResponseCookie cookie = jwtService.invalidateCookie();
+
+        log.debug(cookie.toString());
+        response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        return ResponseEntity.ok(true);
     }
 
     /***
