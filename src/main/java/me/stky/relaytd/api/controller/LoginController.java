@@ -18,6 +18,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Spliterator;
@@ -76,14 +77,14 @@ public class LoginController {
 
     @PostMapping("/logout")
     @ResponseBody // Required else thymeleaf search for it's template
-    public ResponseEntity<Boolean> logout(HttpServletResponse response) {
-        log.info("Logout endpoint");
+    public void logout(HttpServletRequest request, HttpServletResponse response) throws IOException {
+
+        log.info("\n\n\nLogout endpoint\n");
         // Overwrite cookie
         ResponseCookie cookie = jwtService.invalidateCookie();
 
-        log.debug(cookie.toString());
         response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-        return ResponseEntity.ok(true);
+        response.sendRedirect("http://localhost:4200/login/");
     }
 
     /***

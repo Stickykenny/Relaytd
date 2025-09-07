@@ -12,6 +12,11 @@ spring:
     database-platform: org.hibernate.dialect.H2Dialect
     defer-datasource-initialization: 'true'
     show-sql: 'true'
+  security:
+    jwt:
+      key: THISISFAKETHISISFAKETHISISFAKETHISISFAKETHISISFAKETHISISFAKETHISISFAKETHISISFAKE # "your-256-bit-secret-key-that-is-at-least-32-characters"
+      name: jwtNAME
+
 jpa:
   hibernate:
     ddl-auto: create
