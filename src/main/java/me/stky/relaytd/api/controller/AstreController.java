@@ -2,6 +2,9 @@ package me.stky.relaytd.api.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import me.stky.relaytd.api.model.Astre;
 import me.stky.relaytd.api.model.AstreDTO;
 import me.stky.relaytd.api.model.AstreID;
@@ -23,8 +26,16 @@ public class AstreController {
     @Autowired
     AstreService astreService;
 
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     @GetMapping("/welcome")
-    public ResponseEntity<String> getWelcome() {
+    public ResponseEntity<String> getWelcome(HttpServletRequest request, HttpServletResponse response) {
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                System.out.println(" cookie: " + cookie.getName() + " = " + cookie.getValue());
+            }
+        }
+        System.out.println();
+        System.out.println();
         return new ResponseEntity<>("Welcome to the controller", HttpStatus.OK);
     }
 

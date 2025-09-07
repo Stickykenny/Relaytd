@@ -7,6 +7,7 @@ import me.stky.relaytd.api.model.LoginRequest;
 import me.stky.relaytd.api.service.AuthentificationService;
 import me.stky.relaytd.api.service.JWTService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -32,7 +33,8 @@ import java.util.stream.StreamSupport;
 @Slf4j
 public class LoginController {
 
-
+    @Value("${spring.security.jwt.name}")
+    private String jwtName;
     @Autowired
     private AuthenticationManager authenticationManager;
 
@@ -53,7 +55,7 @@ public class LoginController {
     @ResponseBody // Required else thymeleaf search for it's template
     public ResponseEntity<String> login(@RequestBody LoginRequest loginRequest,
                                         HttpServletResponse response) {
-        log.info("Connecting using Form login");
+        log.info("Connecting using Form login\n\n\n");
 
         try {
             Authentication authentication = authenticationManager.authenticate(
@@ -77,14 +79,17 @@ public class LoginController {
 
     @PostMapping("/logout")
     @ResponseBody // Required else thymeleaf search for it's template
-    public void logout(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public ResponseEntity<String> logout(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
         log.info("\n\n\nLogout endpoint\n");
         // Overwrite cookie
-        ResponseCookie cookie = jwtService.invalidateCookie();
+        // ResponseCookie cookie = jwtService.generateCookie("invalidated");
 
-        response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-        response.sendRedirect("http://localhost:4200/login/");
+        ResponseCookie cookie = jwtService.invalidateCookie();
+        //response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body("Logout successful");
     }
 
     /***

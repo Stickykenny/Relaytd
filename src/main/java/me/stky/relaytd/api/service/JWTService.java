@@ -99,20 +99,19 @@ public class JWTService {
                 .secure(true)
                 .path("/")
                 .maxAge(Duration.ofMinutes(60))
-                .sameSite("Lax") // or "Strict" or "None" or "Lax"
+                .sameSite("None") // or "Strict" or "None" or "Lax"
                 .build();
     }
 
     public ResponseCookie invalidateCookie() {
-        return ResponseCookie.from(jwtName, "invalidated")
+        return ResponseCookie.from(jwtName, "")
                 .httpOnly(true)
                 .secure(true)
                 .path("/")
-                .maxAge(Duration.ofSeconds(1))
-                .sameSite("Lax") // or "Strict" or "None" or "Lax"
+                .sameSite("None") // or "Strict" or "None" or "Lax"
+                .maxAge(0)
                 .build();
     }
-
 
     public String extractUsername(String token) {
         Jwt jwt = this.jwtDecoder.decode(token);
