@@ -2,8 +2,6 @@ package me.stky.relaytd.api.model;
 
 
 import jakarta.persistence.Embeddable;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,7 +12,6 @@ import lombok.NoArgsConstructor;
 @Embeddable
 public class AstreID {
     private String type;
+    private String subtype;
     private String name;
-
-
 }
