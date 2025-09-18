@@ -57,8 +57,10 @@ public class AstreController {
 
     @Operation(summary = "Get an astre", description = "Get an astre using a type and name")
     @GetMapping("/astre")
-    public ResponseEntity<Astre> getAstre(@RequestBody AstreID astreID) {
-        return astreService.getAstreById(astreID.getType(), astreID.getName())
+    public ResponseEntity<Astre> getAstre(String type, String subtype, String name) {
+        // Don't use Request Body on Get Mapping, it is allowed but most of the tome not supported
+        AstreID astreID = new AstreID(type, subtype, name);
+        return astreService.getAstreById(astreID)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
@@ -87,7 +89,7 @@ public class AstreController {
     @Operation(summary = "Delete an astre", description = "Delete using the type and name")
     @DeleteMapping("/astre")
     public ResponseEntity<Object> deleteAstre(@RequestBody AstreID astreID) {
-        if (astreService.deleteAstre(astreID.getType(), astreID.getName())) {
+        if (astreService.deleteAstre(astreID)) {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();

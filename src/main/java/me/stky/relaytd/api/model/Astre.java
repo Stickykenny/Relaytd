@@ -20,9 +20,12 @@ public class Astre {
     @EmbeddedId
     private AstreID astreID;
 
+    private String subname;
     private String tags;
+    private String link;
     private String description;
     private String parent;
+    private String id;
     @Schema(hidden = true)
     private LocalDate date_added;
     @Schema(hidden = true)
@@ -36,7 +39,7 @@ public class Astre {
      */
     public Astre clone() {
         return new Astre(
-                new AstreID(astreID.getType(), astreID.getName()),
-                tags, description, parent, date_added, last_modified, from_before);
+                new AstreID(astreID.getType(), astreID.getSubtype(), astreID.getName()),
+                subname, tags, link, description, parent, id, date_added, last_modified, from_before);
     }
 }

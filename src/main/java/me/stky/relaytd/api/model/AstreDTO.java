@@ -9,9 +9,14 @@ import java.util.Objects;
 @Builder
 public record AstreDTO(
         AstreID astreID,
+
+
+        String subname,
         String tags,
+        String link,
         String description,
         String parent,
+        String id,
 
         Boolean fromBefore
 ) {

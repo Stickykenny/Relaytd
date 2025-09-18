@@ -10,13 +10,13 @@ import java.util.Optional;
 public interface AstreService {
     List<Astre> getAllAstre();
 
-    Optional<Astre> getAstreById(String type, String name);
+    Optional<Astre> getAstreById(AstreID astreID);
 
     Optional<Astre> saveAstre(Astre astre);
 
     Optional<Astre> updateAstre(AstreDTO astreDTO);
 
-    boolean deleteAstre(String type, String name);
+    boolean deleteAstre(AstreID astreID);
 
     List<Astre> upsertAstres(List<AstreDTO> astresDTO);
 

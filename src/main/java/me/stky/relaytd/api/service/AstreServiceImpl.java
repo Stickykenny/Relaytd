@@ -36,8 +36,8 @@ public class AstreServiceImpl implements AstreService {
     }
 
     @Override
-    public Optional<Astre> getAstreById(String type, String name) {
-        return astreRepository.findById(new AstreID(type, name));
+    public Optional<Astre> getAstreById(AstreID astreID) {
+        return astreRepository.findById(astreID);
     }
 
 
@@ -64,11 +64,11 @@ public class AstreServiceImpl implements AstreService {
     }
 
     @Override
-    public boolean deleteAstre(String type, String name) {
-        Optional<Astre> potentialAstre = astreRepository.findById(new AstreID(type, name));
+    public boolean deleteAstre(AstreID astreID) {
+        Optional<Astre> potentialAstre = astreRepository.findById(astreID);
         if (potentialAstre.isPresent()) {
-            astreRepository.deleteById(new AstreID(type, name));
-            log.info(type + "---" + name + "  got deleted");
+            astreRepository.deleteById(astreID);
+            log.info(astreID.getType() + "/" + astreID.getSubtype() + "---" + astreID.getName() + "  got deleted");
 
             // !Never log confidential informations
             ObjectMapper mapper = new ObjectMapper();
@@ -118,15 +118,11 @@ public class AstreServiceImpl implements AstreService {
     }
 
     private Astre convertToEntity(AstreDTO astreDTO) {
-        Astre astre = new Astre();
-        astre.setAstreID(astreDTO.astreID());
-        astre.setTags(astreDTO.tags());
-        astre.setDescription(astreDTO.description());
-        astre.setParent(astreDTO.parent());
-        astre.setDescription(astreDTO.description());
 
+        Astre astre = new Astre(astreDTO.astreID(),
+                astreDTO.subname(), astreDTO.tags(), astreDTO.link(), astreDTO.description(), astreDTO.parent(), astreDTO.id(),
+                LocalDate.now(), LocalDate.now(), astreDTO.fromBefore());
 
-        astre.setFrom_before(astreDTO.fromBefore());
         if (astreDTO.fromBefore() == null) {
             astre.setFrom_before(Boolean.TRUE);
         }
@@ -143,10 +139,13 @@ public class AstreServiceImpl implements AstreService {
         Optional<Astre> astreDB = astreRepository.findById(astre.getAstreID());
         if (astreDB.isPresent()) {
             astre.setDate_added(astreDB.get().getDate_added());
+            if (!astre.equals(astreDB.get())) {
+                astre.setLast_modified(LocalDate.now());
+            }
         } else {
             astre.setDate_added(LocalDate.now());
+            astre.setLast_modified(LocalDate.now());
         }
-        astre.setLast_modified(LocalDate.now());
         return astre;
     }
 }

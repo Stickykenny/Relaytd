@@ -131,21 +131,22 @@ public class AstreServiceTest {
     @Test
     void testDeleteAstre() {
         String type = "type1";
+        String subtype = "name1";
         String name = "name1";
+        AstreID astreID = new AstreID(type, subtype, name);
+        when(astreRepository.findById(astreID)).thenReturn(Optional.empty());
 
-        when(astreRepository.findById(new AstreID(type, name))).thenReturn(Optional.empty());
-
-        var result = astreService.deleteAstre(type, name);
+        var result = astreService.deleteAstre(astreID);
         assertTrue(result);
     }
 
     private Astre createAstre(int number) {
-        return new Astre(createAstreID(number),
-                "tag1,tag2", "description", "no-parent",
+        return new Astre(createAstreID(number), "subname",
+                "tag1,tag2", "link", "description", "no-parent", "id",
                 LocalDate.now(), LocalDate.now(), Boolean.FALSE);
     }
 
     private AstreID createAstreID(int number) {
-        return new AstreID("type1", "name" + number);
+        return new AstreID("type" + number, "subtype" + number, "name" + number);
     }
 }
