@@ -57,6 +57,11 @@ public class LoginController {
                                                      HttpServletResponse response) {
         log.info("Connecting using Form login\n\n\n");
 
+        if (loginRequest.getPassword() == null || loginRequest.getPassword().trim().equalsIgnoreCase("")) {
+            String message = "No password entered";
+            log.info(message);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("Message", message));
+        }
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(

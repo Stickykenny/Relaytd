@@ -14,7 +14,10 @@ public class UserInfo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+    @Column(unique = true, nullable = false)
     private String username;
     private String password;
     private String roles;
+    private String provider;
+    private String provider_id;
 }

@@ -71,8 +71,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    public JwtLoginSuccessHandler jwtLoginSuccessHandler(JWTService jwtService) {
-        return new JwtLoginSuccessHandler(jwtService);
+    public JwtOAuthLoginSuccessHandler jwtOAuthLoginSuccessHandler(JWTService jwtService) {
+        return new JwtOAuthLoginSuccessHandler(jwtService);
     }
 
 
@@ -126,7 +126,7 @@ public class SecurityConfig {
                         .anyRequest().authenticated())
 
                 .addFilterBefore(jwtAuthFilter(jwtService), UsernamePasswordAuthenticationFilter.class)
-                .oauth2Login(oauth -> oauth.successHandler(jwtLoginSuccessHandler(jwtService)))
+                .oauth2Login(oauth -> oauth.successHandler(jwtOAuthLoginSuccessHandler(jwtService)))
                 .oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults())) // Contains protected ressources // incompatible with formlogin
                 // Authentification server : provide ID : ex : Github, FB, Google
                 // Client Server is still Spring Boot - The Frontend calls the backend that ask the auth
