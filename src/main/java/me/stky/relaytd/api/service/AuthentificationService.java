@@ -1,5 +1,6 @@
 package me.stky.relaytd.api.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.User;
@@ -14,6 +15,7 @@ import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @Service
 public class AuthentificationService {
 
@@ -29,7 +31,7 @@ public class AuthentificationService {
 
         UsernamePasswordAuthenticationToken token = ((UsernamePasswordAuthenticationToken) user);
         if (token.isAuthenticated()) {
-            System.out.println("authenticated");
+            log.debug("Authenticated with Username Password");
             User u = (User) token.getPrincipal();
             usernameInfo.append("Welcome, " + u.getUsername());
 
@@ -54,7 +56,7 @@ public class AuthentificationService {
         OAuth2AuthenticationToken authToken = ((OAuth2AuthenticationToken) user);
         OAuth2AuthorizedClient authClient = this.authorizedClientService.loadAuthorizedClient(authToken.getAuthorizedClientRegistrationId(), authToken.getName());
         if (authToken.isAuthenticated()) {
-            System.out.println("authenticated");
+            log.debug("Authenticated with OAuth2");
             Map<String, Object> userAttributes = ((DefaultOAuth2User) authToken.getPrincipal()).getAttributes();
 
 

@@ -58,7 +58,7 @@ public class AstreController {
     @Operation(summary = "Get an astre", description = "Get an astre using a type and name")
     @GetMapping("/astre")
     public ResponseEntity<Astre> getAstre(String type, String subtype, String name) {
-        // Don't use Request Body on Get Mapping, it is allowed but most of the tome not supported
+        // Don't use Request Body on Get Mapping, it is allowed but most of the time not supported
         AstreID astreID = new AstreID(type, subtype, name);
         return astreService.getAstreById(astreID)
                 .map(ResponseEntity::ok)

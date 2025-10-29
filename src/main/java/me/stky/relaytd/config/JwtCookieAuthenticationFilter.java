@@ -5,6 +5,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import me.stky.relaytd.api.service.JWTService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,6 +22,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 public class JwtCookieAuthenticationFilter extends OncePerRequestFilter {
 
     @Value("${spring.security.jwt.name}")
@@ -53,7 +55,7 @@ public class JwtCookieAuthenticationFilter extends OncePerRequestFilter {
                     Jwt jwt = jwtDecoder.decode(cookie.getValue());
                     String username = jwtService.extractUsername(cookie.getValue());
 
-                    System.out.println("Extracted username: " + username);
+                    log.info("Extracted username: " + username);
                     cookie.getAttributes().entrySet().stream()
                             .forEach(entry -> System.out.println(entry.getKey() + " = " + entry.getValue()));
 
@@ -63,7 +65,7 @@ public class JwtCookieAuthenticationFilter extends OncePerRequestFilter {
                     UsernamePasswordAuthenticationToken auth =
                             new UsernamePasswordAuthenticationToken(username, null, authorities);
                     SecurityContextHolder.getContext().setAuthentication(auth);
-                    System.out.println("auth ok" + auth);
+                    log.info("Auth correct" + auth);
                     break;
                 }
             }

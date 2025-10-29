@@ -15,6 +15,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * This Custom User Service is for Database credential
+ */
+
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
     @Autowired
