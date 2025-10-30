@@ -20,4 +20,5 @@ public class UserInfo {
     private String roles;
     private String provider;
     private String provider_id;
+    private String validation_key;
 }

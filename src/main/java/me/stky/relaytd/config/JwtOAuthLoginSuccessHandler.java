@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -55,7 +56,7 @@ public class JwtOAuthLoginSuccessHandler implements AuthenticationSuccessHandler
             newCred.setRoles(roles);
 
             log.info("Added a new credential from new OAuth login [Google] : " + newCred);
-            userRepository.save(newCred);
+            saveUserInfoToDatabase(newCred);
         }
     }
 
@@ -75,9 +76,31 @@ public class JwtOAuthLoginSuccessHandler implements AuthenticationSuccessHandler
             newCred.setRoles(roles);
 
             log.info("Added a new credential from new OAuth login [Github] : " + newCred);
-            userRepository.save(newCred);
+            saveUserInfoToDatabase(newCred);
         }
     }
+
+    public String generateRandomValidationKey(int length) {
+        StringBuilder validationKey = new StringBuilder(length);
+        Random random = new Random();
+        int lowerLimit = 33;
+        int upperLimit = 126; // included
+
+        for (int i = 0; i < length; i++) {
+            int randomIndex = lowerLimit + (int) (random.nextFloat() * (upperLimit - lowerLimit + 1));
+            validationKey.append((char) randomIndex);
+        }
+        return validationKey.toString();
+    }
+
+
+    public void saveUserInfoToDatabase(UserInfo userInfo) {
+        String randomValidationKey = generateRandomValidationKey(128);
+        userInfo.setValidation_key(randomValidationKey);
+        log.debug("Generated this validation key [" + randomValidationKey + "], for this user [" + userInfo.getUsername() + "]");
+        userRepository.save(userInfo);
+    }
+
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
@@ -98,6 +121,7 @@ public class JwtOAuthLoginSuccessHandler implements AuthenticationSuccessHandler
             log.info("This application only support Github and Google as external provider");
             log.error("Authentification type not recognized. " + principal);
             response.sendRedirect("http://localhost:4200/login?login=failed");
+            return;
         }
 
         // Create Entry in DB
@@ -109,6 +133,7 @@ public class JwtOAuthLoginSuccessHandler implements AuthenticationSuccessHandler
             saveGithubOAuthCredential((OAuth2AuthenticationToken) authentication, (DefaultOAuth2User) principal);
         }
 
+        System.out.println("Addtional key  : -" + generateRandomValidationKey(128));
         String jwt = jwtService.generateToken(authentication);
         ResponseCookie cookie = jwtService.generateCookie(jwt);
         log.debug(cookie.toString());
