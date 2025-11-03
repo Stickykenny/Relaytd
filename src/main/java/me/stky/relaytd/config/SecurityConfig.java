@@ -78,13 +78,15 @@ public class SecurityConfig {
 
     @Bean
     public InMemoryUserDetailsManager userDetailsService() {
+
         UserDetails user1 = User.withUsername("visitor")
                 .password(passwordEncoder().encode("password"))
-                .roles(Roles.ROLE_USER.getAuthorityName())
+                .roles(new String[]{Roles.ROLE_VISITOR.getAuthorityName(), Roles.ROLE_INMEMORY.getAuthorityName()})
                 .build();
+
         UserDetails admin = User.withUsername("visitor2")
                 .password(passwordEncoder().encode("password"))
-                .roles(new String[]{Roles.ROLE_VISITOR.getAuthorityName(), "EMPTY"})
+                .roles(new String[]{Roles.ROLE_USER.getAuthorityName(), Roles.ROLE_INMEMORY.getAuthorityName()})
                 .build();
         return new InMemoryUserDetailsManager(user1, admin);
     }

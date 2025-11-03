@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -41,10 +40,10 @@ public class JwtOAuthLoginSuccessHandler implements AuthenticationSuccessHandler
 
 
     public void saveGoogleOAuthCredential(OAuth2AuthenticationToken authentication, DefaultOidcUser principal) {
-        DefaultOidcUser oidcUser = principal;
-        String email = oidcUser.getEmail();
+        Map<String, Object> oidcUser = principal.getClaims();
+        String email = oidcUser.get("email").toString();
         String provider = authentication.getAuthorizedClientRegistrationId();
-        String providerId = oidcUser.getSubject();
+        String providerId = oidcUser.get("sub").toString();
 
         Optional<UserInfo> user = userRepository.findByUsername(email);
         if (user.isEmpty()) {
@@ -80,22 +79,8 @@ public class JwtOAuthLoginSuccessHandler implements AuthenticationSuccessHandler
         }
     }
 
-    public String generateRandomValidationKey(int length) {
-        StringBuilder validationKey = new StringBuilder(length);
-        Random random = new Random();
-        int lowerLimit = 33;
-        int upperLimit = 126; // included
-
-        for (int i = 0; i < length; i++) {
-            int randomIndex = lowerLimit + (int) (random.nextFloat() * (upperLimit - lowerLimit + 1));
-            validationKey.append((char) randomIndex);
-        }
-        return validationKey.toString();
-    }
-
-
     public void saveUserInfoToDatabase(UserInfo userInfo) {
-        String randomValidationKey = generateRandomValidationKey(128);
+        String randomValidationKey = jwtService.generateRandomValidationKey(128);
         userInfo.setValidation_key(randomValidationKey);
         log.debug("Generated this validation key [" + randomValidationKey + "], for this user [" + userInfo.getUsername() + "]");
         userRepository.save(userInfo);
@@ -108,7 +93,6 @@ public class JwtOAuthLoginSuccessHandler implements AuthenticationSuccessHandler
                                         Authentication authentication) throws IOException {
 
         log.info("Connecting using OAuth");
-
 
         if (!(authentication instanceof OAuth2AuthenticationToken)) {
             log.error("Authentification type wasn't OIDC. " + authentication);
@@ -133,7 +117,6 @@ public class JwtOAuthLoginSuccessHandler implements AuthenticationSuccessHandler
             saveGithubOAuthCredential((OAuth2AuthenticationToken) authentication, (DefaultOAuth2User) principal);
         }
 
-        System.out.println("Addtional key  : -" + generateRandomValidationKey(128));
         String jwt = jwtService.generateToken(authentication);
         ResponseCookie cookie = jwtService.generateCookie(jwt);
         log.debug(cookie.toString());

@@ -2,7 +2,10 @@ package me.stky.relaytd.api.service;
 
 
 import lombok.extern.slf4j.Slf4j;
+import me.stky.relaytd.api.model.UserInfo;
+import me.stky.relaytd.api.repository.UserRepository;
 import me.stky.relaytd.config.Roles;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -19,6 +22,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 @Service
@@ -34,6 +38,9 @@ public class JWTService {
 
     private final JwtEncoder jwtEncoder;
     private final JwtDecoder jwtDecoder;
+
+    @Autowired
+    private UserRepository userRepository;
 
     private AuthentificationService authentificationService;
 
@@ -73,12 +80,18 @@ public class JWTService {
     }
 
     /**
-     * Generate Jwt Token
+     * Generate Jwt Token with a validation key
      *
      * @param authentication
      * @return
      */
     public String generateToken(Authentication authentication) {
+
+        String validationKey = "";
+        if (userRepository.findByUsername(authentificationService.fetchUsernameFromAuth(authentication)).isPresent()) {
+            validationKey = updateNewValidationKey(authentication);
+        }
+
         Instant now = Instant.now();
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer("self")
@@ -86,6 +99,7 @@ public class JWTService {
                 .expiresAt(now.plus(60, ChronoUnit.MINUTES))
                 .subject(authentication.getName())
                 .claim("roles", createRoles(authentication))
+                .claim("validationkey", validationKey)
                 .build();
         JwtEncoderParameters jwtEncoderParameters = JwtEncoderParameters.from(JwsHeader.with(MacAlgorithm.HS256).build(), claims);
         log.info("Generated this jwt token :" + this.jwtEncoder.encode(jwtEncoderParameters).getTokenValue());
@@ -125,5 +139,44 @@ public class JWTService {
         } catch (JwtException e) {
             return false;
         }
+    }
+
+
+    /**
+     * Generate a random string of length 'length' including characters, numbers and special characters
+     *
+     * @param length Length of the string
+     * @return A random string
+     */
+    public String generateRandomValidationKey(int length) {
+        StringBuilder validationKey = new StringBuilder(length);
+        Random random = new Random();
+        int lowerLimit = 33;
+        int upperLimit = 126; // included
+
+        for (int i = 0; i < length; i++) {
+            int randomIndex = lowerLimit + (int) (random.nextFloat() * (upperLimit - lowerLimit + 1));
+            validationKey.append((char) randomIndex);
+        }
+        return validationKey.toString();
+    }
+
+
+    /**
+     * Will provide and save a new validation key (for refresh token)
+     *
+     * @param authentication that will use the validation key
+     * @return a new validation key
+     */
+    public String updateNewValidationKey(Authentication authentication) {
+        String randomValidationKey = generateRandomValidationKey(128);
+
+        String username = authentificationService.fetchUsernameFromAuth(authentication);
+        UserInfo user = userRepository.findByUsername(username).orElseThrow(() -> new IllegalStateException("Could not find user [" + username + "] for changing its validation key."));
+
+        user.setValidation_key(randomValidationKey);
+        log.debug("Generated this validation key [" + randomValidationKey + "], for this user [" + user.getUsername() + "]");
+        userRepository.save(user);
+        return randomValidationKey;
     }
 }

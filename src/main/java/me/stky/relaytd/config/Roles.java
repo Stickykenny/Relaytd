@@ -5,6 +5,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 public enum Roles {
     ROLE_VISITOR,
+    ROLE_INMEMORY,
     ROLE_USER,
     ROLE_OAUTH_USER,
     ROLE_ADMIN;

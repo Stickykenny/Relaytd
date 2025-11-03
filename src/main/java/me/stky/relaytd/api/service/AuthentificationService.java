@@ -1,12 +1,15 @@
 package me.stky.relaytd.api.service;
 
 import lombok.extern.slf4j.Slf4j;
+import me.stky.relaytd.api.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
@@ -93,5 +96,36 @@ public class AuthentificationService {
             throw new IllegalStateException("Login method not taken into account");
         }
         return authDetails;
+    }
+
+    /**
+     * Retrieve username from Authentification
+     * Google uses email, Github uses the url, InMemory and database uses username
+     *
+     * @param authentication
+     * @return
+     */
+    public String fetchUsernameFromAuth(Authentication authentication) {
+
+        Object principal = authentication.getPrincipal();
+        String username = "";
+        if (principal instanceof DefaultOidcUser) {
+            // Google
+            Map<String, Object> oidcUser = ((DefaultOidcUser) principal).getClaims();
+            username = oidcUser.get("email").toString();
+        } else if (principal instanceof DefaultOAuth2User) {
+            // Github
+            Map<String, Object> githubUser = ((DefaultOAuth2User) principal).getAttributes();
+            username = githubUser.get("url").toString();
+        } else if (principal instanceof User) {
+            // User In Memory
+            username = ((User) principal).getUsername();
+        } else if (principal instanceof UserModel) {
+            // User Database
+            username = ((UserModel) principal).getUsername();
+        } else {
+            throw new IllegalStateException("Unexpected login method");
+        }
+        return username;
     }
 }
