@@ -42,8 +42,12 @@ spring:
     jwt:
       key: # "your-256-bit-secret-key-that-is-at-least-32-characters"
         toupdate.....99999999999999999999999999999 # Yes, of course this isn't the real key
-
-
+      refresh:
+        name:
+          refresh-jwttoken-unsecure
+      access:
+        name:
+          access-jwttoken-unsecure
 springdoc:
   api-docs:
     groups:
