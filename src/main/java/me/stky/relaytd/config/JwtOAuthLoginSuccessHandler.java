@@ -118,9 +118,11 @@ public class JwtOAuthLoginSuccessHandler implements AuthenticationSuccessHandler
         }
 
         String jwt = jwtService.generateToken(authentication);
-        ResponseCookie cookie = jwtService.generateCookie(jwt);
+        ResponseCookie cookie = jwtService.generateAccessCookie(jwt);
         log.debug(cookie.toString());
-        response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
+        ResponseCookie refreshCookie = jwtService.generateRefreshCookie(jwt);
+        response.setHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
 
         // Redirect to Angular frontend
         response.sendRedirect("http://localhost:4200/oauth-callback/");

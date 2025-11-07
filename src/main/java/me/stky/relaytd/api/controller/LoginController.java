@@ -1,5 +1,6 @@
 package me.stky.relaytd.api.controller;
 
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +18,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -31,10 +34,15 @@ import java.util.stream.StreamSupport;
 @RestController
 @CrossOrigin
 @Slf4j
+@RequestMapping("/auth")
 public class LoginController {
 
-    @Value("${spring.security.jwt.name}")
-    private String jwtName;
+    @Value("${spring.security.jwt.refresh.name}")
+    private String jwtRefreshName;
+
+    @Value("${spring.security.jwt.access.name}")
+    private String jwtAccessName;
+
     @Autowired
     private AuthenticationManager authenticationManager;
 
@@ -42,6 +50,9 @@ public class LoginController {
     private AuthentificationService authentificationService;
 
     private JWTService jwtService;
+
+    @Autowired
+    private JwtDecoder jwtDecoder;
 
     public LoginController(JWTService jwtService, AuthenticationManager authenticationManager, AuthentificationService authentificationService) {
         this.jwtService = jwtService;
@@ -69,7 +80,7 @@ public class LoginController {
             );
 
             String token = jwtService.generateToken(authentication);
-            ResponseCookie cookie = jwtService.generateCookie(token);
+            ResponseCookie cookie = jwtService.generateRefreshCookie(token);
 
             response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
             return ResponseEntity.ok()
@@ -79,6 +90,41 @@ public class LoginController {
             log.info("login failed");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("Message", "Invalid credentials"));
         }
+    }
+
+    /**
+     * Provide Jwt Access Cookie if a Refresh Token is found and valid
+     *
+     * @param request
+     * @param response
+     * @return
+     */
+    @PostMapping("/refresh")
+    @ResponseBody
+    public ResponseEntity<Map<String, String>> refresh(
+            HttpServletRequest request,
+            HttpServletResponse response) {
+
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                System.out.println(" cookie: " + cookie.getName() + " = " + cookie.getValue());
+                if (jwtRefreshName.equals(cookie.getName()) && jwtService.validateCookie(cookie)) {
+
+                    // Extract data from Refresh Token
+                    Jwt refreshJwt = jwtDecoder.decode(cookie.getValue());
+                    String username = jwtService.extractUsername(cookie.getValue());
+
+
+                    ResponseCookie responseCookie = jwtService.generateAccessCookie(refreshJwt.getTokenValue());
+                    response.addHeader(HttpHeaders.SET_COOKIE, responseCookie.toString());
+
+                    Map<String, String> responseMessage = Map.of("message", "Access Token provided");
+                    log.info("Provided a refresh token to " + username);
+                    return ResponseEntity.ok(responseMessage);
+                }
+            }
+        }
+        return ResponseEntity.status(HttpStatus.CONFLICT).build();
     }
 
 

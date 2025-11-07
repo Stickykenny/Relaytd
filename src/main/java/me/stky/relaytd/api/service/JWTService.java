@@ -1,6 +1,7 @@
 package me.stky.relaytd.api.service;
 
 
+import jakarta.servlet.http.Cookie;
 import lombok.extern.slf4j.Slf4j;
 import me.stky.relaytd.api.model.UserInfo;
 import me.stky.relaytd.api.repository.UserRepository;
@@ -22,6 +23,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 import java.util.stream.Collectors;
 
@@ -33,8 +35,11 @@ public class JWTService {
     @Value("${spring.security.jwt.key}")
     private String jwtKey;
 
-    @Value("${spring.security.jwt.name}")
-    private String jwtName;
+    @Value("${spring.security.jwt.refresh.name}")
+    private String jwtRefreshName;
+    @Value("${spring.security.jwt.access.name}")
+    private String jwtAccessName;
+    private String jwtValidationKeyName = "validationkey";
 
     private final JwtEncoder jwtEncoder;
     private final JwtDecoder jwtDecoder;
@@ -88,7 +93,7 @@ public class JWTService {
     public String generateToken(Authentication authentication) {
 
         String validationKey = "";
-        if (userRepository.findByUsername(authentificationService.fetchUsernameFromAuth(authentication)).isPresent()) {
+        if (userRepository.findByUsername(authentificationService.fetchDBUsernameFromAuth(authentication)).isPresent()) {
             validationKey = updateNewValidationKey(authentication);
         }
 
@@ -97,9 +102,9 @@ public class JWTService {
                 .issuer("self")
                 .issuedAt(now)
                 .expiresAt(now.plus(60, ChronoUnit.MINUTES))
-                .subject(authentication.getName())
+                .subject(authentificationService.fetchDBUsernameFromAuth(authentication))
                 .claim("roles", createRoles(authentication))
-                .claim("validationkey", validationKey)
+                .claim(jwtValidationKeyName, validationKey)
                 .build();
         JwtEncoderParameters jwtEncoderParameters = JwtEncoderParameters.from(JwsHeader.with(MacAlgorithm.HS256).build(), claims);
         log.info("Generated this jwt token :" + this.jwtEncoder.encode(jwtEncoderParameters).getTokenValue());
@@ -107,18 +112,28 @@ public class JWTService {
         return this.jwtEncoder.encode(jwtEncoderParameters).getTokenValue();
     }
 
-    public ResponseCookie generateCookie(String jwtToken) {
-        return ResponseCookie.from(jwtName, jwtToken)
+    public ResponseCookie generateAccessCookie(String jwtToken) {
+        return ResponseCookie.from(jwtAccessName, jwtToken)
                 .httpOnly(true)
                 .secure(true)
                 .path("/")
-                .maxAge(Duration.ofMinutes(60))
+                .maxAge(Duration.ofMinutes(1))
+                .sameSite("None") // or "Strict" or "None" or "Lax"
+                .build();
+    }
+
+    public ResponseCookie generateRefreshCookie(String jwtToken) {
+        return ResponseCookie.from(jwtRefreshName, jwtToken)
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(Duration.ofMinutes(60 * 24 * 7))
                 .sameSite("None") // or "Strict" or "None" or "Lax"
                 .build();
     }
 
     public ResponseCookie invalidateCookie() {
-        return ResponseCookie.from(jwtName, "")
+        return ResponseCookie.from(jwtRefreshName, "")
                 .httpOnly(true)
                 .secure(true)
                 .path("/")
@@ -132,10 +147,21 @@ public class JWTService {
         return jwt.getSubject();
     }
 
-    public boolean validateToken(String token) {
+    /**
+     * Verify the jwt in the cookie is valid (decodable and has the correct validation key)
+     *
+     * @param cookie Cookie containing the jwt to verify
+     * @return True if the cookie is valid
+     */
+    public boolean validateCookie(Cookie cookie) {
         try {
-            this.jwtDecoder.decode(token);
-            return true;
+            Jwt jwtToken = this.jwtDecoder.decode(cookie.getValue());
+            String username = extractUsername(jwtToken.getTokenValue());
+            if (username.equalsIgnoreCase("visitor") || username.equalsIgnoreCase("visitor2")) {
+                return true;
+            }
+            Optional<UserInfo> userOpt = userRepository.findByUsername(username);
+            return userOpt.map(userInfo -> userInfo.getValidation_key().equals(jwtToken.getClaimAsString(jwtValidationKeyName))).orElse(false);
         } catch (JwtException e) {
             return false;
         }
@@ -171,7 +197,7 @@ public class JWTService {
     public String updateNewValidationKey(Authentication authentication) {
         String randomValidationKey = generateRandomValidationKey(128);
 
-        String username = authentificationService.fetchUsernameFromAuth(authentication);
+        String username = authentificationService.fetchDBUsernameFromAuth(authentication);
         UserInfo user = userRepository.findByUsername(username).orElseThrow(() -> new IllegalStateException("Could not find user [" + username + "] for changing its validation key."));
 
         user.setValidation_key(randomValidationKey);

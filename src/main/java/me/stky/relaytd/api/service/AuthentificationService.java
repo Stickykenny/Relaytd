@@ -99,13 +99,13 @@ public class AuthentificationService {
     }
 
     /**
-     * Retrieve username from Authentification
+     * Retrieve username assigned in DB from Authentification
      * Google uses email, Github uses the url, InMemory and database uses username
      *
      * @param authentication
      * @return
      */
-    public String fetchUsernameFromAuth(Authentication authentication) {
+    public String fetchDBUsernameFromAuth(Authentication authentication) {
 
         Object principal = authentication.getPrincipal();
         String username = "";

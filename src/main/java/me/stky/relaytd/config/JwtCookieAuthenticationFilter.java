@@ -25,8 +25,8 @@ import java.util.List;
 @Slf4j
 public class JwtCookieAuthenticationFilter extends OncePerRequestFilter {
 
-    @Value("${spring.security.jwt.name}")
-    private String jwtName;
+    @Value("${spring.security.jwt.access.name}")
+    private String jwtAccessName;
 
     @Autowired
     private JwtEncoder jwtEncoder;
@@ -40,18 +40,31 @@ public class JwtCookieAuthenticationFilter extends OncePerRequestFilter {
         this.jwtService = jwtService;
     }
 
+    /**
+     * Authenticate if a valid Jwt Access Token is found
+     *
+     * @param request
+     * @param response
+     * @param filterChain
+     * @throws ServletException
+     * @throws IOException
+     */
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
+        String path = request.getServletPath();
+        if (path.contains("/auth/") || path.startsWith("/swagger")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         if (request.getCookies() != null) {
-
-
             for (Cookie cookie : request.getCookies()) {
                 System.out.println(" cookie: " + cookie.getName() + " = " + cookie.getValue());
-                if (jwtName.equals(cookie.getName()) && jwtService.validateToken(cookie.getValue())) {
+                if (jwtAccessName.equals(cookie.getName()) && jwtService.validateCookie(cookie)) {
                     Jwt jwt = jwtDecoder.decode(cookie.getValue());
                     String username = jwtService.extractUsername(cookie.getValue());
 
@@ -62,10 +75,9 @@ public class JwtCookieAuthenticationFilter extends OncePerRequestFilter {
                     List<GrantedAuthority> authorities = new ArrayList<>();
                     jwt.getClaimAsStringList("roles").stream().forEach(role -> authorities.add(new SimpleGrantedAuthority(role)));
 
-                    UsernamePasswordAuthenticationToken auth =
-                            new UsernamePasswordAuthenticationToken(username, null, authorities);
+                    UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(username, null, authorities);
                     SecurityContextHolder.getContext().setAuthentication(auth);
-                    log.info("Auth correct" + auth);
+                    log.info("Authentification correct : " + auth);
                     break;
                 }
             }
