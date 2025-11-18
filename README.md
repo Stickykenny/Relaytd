@@ -55,6 +55,7 @@ Front-end
 - User Authentification with Database and In-Memory
 - OAuth 2.0 with Github or Google
 - JWT token generation and requirement through cookies (http-only)
+- Refresh token generation and requirement through cookies (http-only)
 - CSRF is disabled and not needed but implementation is commented and still available to see
 
 </div>
@@ -70,6 +71,7 @@ Front-end
 - I am leaving the comments as they are a learning points in this project
 - Changed Path Variables endpoints to Endpoint using Request Body, Path Variables are too restricted due to URI (no "/",
   no spaces)
+- Pure JS for dynamic DOM + CSS doesn't work with Angular, it needs to be done the Angular way
 
 #### Plan
 
