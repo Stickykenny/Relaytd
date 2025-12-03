@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name:
+    kubernetes-bootcamp-name
+  labels:
+    app: kubernetes-bootcamp
+spec:
+  selector:
+    matchLabels:
+      app: kubernetes-bootcamp
+  strategy: { }
+  template:
+    metadata:
+      labels:
+        app: kubernetes-bootcamp
+    spec:
+      containers:
+        - image: relaytd-server:latest
+          name: relaytd
+          imagePullPolicy: Never # For using local image
+          resources: { }
+status: { }
