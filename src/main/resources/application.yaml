@@ -4,7 +4,7 @@ spring:
       relaytd
   datasource:
     url:
-      /// ------- HIDDEN ------- ///
+      jdbc:postgresql://db:5432/relaytd_db
     username:
       /// ------- HIDDEN ------- ///
     password:
@@ -77,7 +77,8 @@ server:
       always
     include-binding-errors:
       always
-
+    include-stacktrace:
+      ON_PARAM
 logging:
   level:
     org:
@@ -94,6 +95,5 @@ logging:
 
 
   config:
-    src/main/resources/logback.xml
-
+    classpath:logback.xml
 
