@@ -12,12 +12,16 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.*;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
@@ -140,6 +144,75 @@ public class AstreServiceTest {
         assertTrue(result);
     }
 
+
+    @Test
+    void testGetPaginatedAstres_empty() {
+
+        int pageNumber = 0;
+        int size = 10;
+
+        Page<Astre> fakePage = new PageImpl<>(List.of());
+        when(astreRepository.findAll(any(Pageable.class))).thenReturn(fakePage);
+
+        Page<Astre> result = astreService.getPaginatedAstres(pageNumber, size);
+
+
+        assertTrue(result.isEmpty());
+        assertEquals(1, result.getTotalPages());
+        assertEquals(List.of(), result.getContent());
+    }
+
+    @Test
+    void testGetPaginatedAstres_ValidPage() {
+
+        int pageNumber = 0;
+        int size = 10;
+        int astreNumber = 101;
+        String sortBy = "astreID";
+
+        PageRequest pageable = PageRequest.of(pageNumber, size, Sort.by(sortBy).ascending());
+
+        List<Astre> bulkAstres = createBulkAstres(astreNumber);
+        Page<Astre> fakePage = new PageImpl<>(bulkAstres, pageable, astreNumber);
+        when(astreRepository.findAll(any(Pageable.class))).thenReturn(fakePage);
+
+        Page<Astre> result = astreService.getPaginatedAstres(pageNumber, size);
+
+
+        assertFalse(result.isEmpty());
+        assertEquals(Math.ceilDiv(astreNumber, size), result.getTotalPages());
+        assertEquals(bulkAstres, result.getContent());
+    }
+
+    @Test
+    void testGetPaginatedAstres_integrity() {
+
+        int pageNumber = 0;
+        int size = 10;
+        int astreNumber = 101;
+        String sortBy = "astreID";
+
+        PageRequest pageable = PageRequest.of(pageNumber, size, Sort.by(sortBy).ascending());
+
+        List<Astre> bulkAstres = createBulkAstres(astreNumber);
+        Page<Astre> fakePage = new PageImpl<>(bulkAstres, pageable, astreNumber);
+        when(astreRepository.findAll(any(Pageable.class))).thenReturn(fakePage);
+
+        Page<Astre> result = astreService.getPaginatedAstres(pageNumber, size);
+
+
+        assertFalse(result.isEmpty());
+        assertEquals(Math.ceilDiv(astreNumber, size), result.getTotalPages());
+        assertEquals(bulkAstres, result.getContent());
+
+        List<Astre> resultList = result.toList();
+        for (int i = 0; i < resultList.size(); i++) {
+            assertEquals(createAstre(i), resultList.get(i));
+        }
+
+    }
+
+
     private Astre createAstre(int number) {
         return new Astre(createAstreID(number), "subname",
                 "tag1,tag2", "link", "description", "no-parent", "id",
@@ -148,5 +221,13 @@ public class AstreServiceTest {
 
     private AstreID createAstreID(int number) {
         return new AstreID("type" + number, "subtype" + number, "name" + number);
+    }
+
+    private List<Astre> createBulkAstres(int total) {
+        List<Astre> bulkAstres = new ArrayList<>();
+        for (int i = 0; i < total; i++) {
+            bulkAstres.add(createAstre(i));
+        }
+        return bulkAstres;
     }
 }
