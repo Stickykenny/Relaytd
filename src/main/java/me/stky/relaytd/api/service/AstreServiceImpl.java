@@ -7,7 +7,11 @@ import me.stky.relaytd.api.model.Astre;
 import me.stky.relaytd.api.model.AstreDTO;
 import me.stky.relaytd.api.model.AstreID;
 import me.stky.relaytd.api.repository.AstreRepository;
+import org.hibernate.query.SortDirection;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -32,7 +36,21 @@ public class AstreServiceImpl implements AstreService {
     public List<Astre> getAllAstre() {
         return
                 //astreRepository.getAllByTopic("topic").stream().toList();
-                astreRepository.findAll().stream().toList();
+                astreRepository.findAll();
+    }
+
+    public Page<Astre> getPaginatedAstres(int pageNumber, int size, String sortBy, String order) {
+        PageRequest pageable;
+        if (SortDirection.interpret(order).name().equalsIgnoreCase("ASCENDING")) {
+            pageable = PageRequest.of(pageNumber, size, Sort.by(sortBy).ascending());
+        } else {
+            pageable = PageRequest.of(pageNumber, size, Sort.by(sortBy).descending());
+        }
+        return astreRepository.findAll(pageable);
+    }
+
+    public Page<Astre> getPaginatedAstres(int pageNumber, int size) {
+        return this.getPaginatedAstres(pageNumber, size, "astreID", "asc");
     }
 
     @Override

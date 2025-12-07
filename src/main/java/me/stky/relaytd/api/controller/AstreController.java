@@ -11,6 +11,7 @@ import me.stky.relaytd.api.model.AstreID;
 import me.stky.relaytd.api.model.UpdateAstreIDRequest;
 import me.stky.relaytd.api.service.AstreService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -27,7 +28,7 @@ public class AstreController {
     AstreService astreService;
 
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @GetMapping("/welcome")
+    @GetMapping(path = "/welcome")
     public ResponseEntity<String> getWelcome(HttpServletRequest request, HttpServletResponse response) {
         if (request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {
@@ -54,6 +55,19 @@ public class AstreController {
     public ResponseEntity<List<Astre>> getAstres() {
         return ResponseEntity.ok(astreService.getAllAstre());
     }
+
+    @PreAuthorize("hasAuthority('ROLE_USER')")
+    @Operation(summary = "Get all astres in a paginated format", description = "Get all astres")
+    @GetMapping("/getallpaginated")
+    public ResponseEntity<Page<Astre>> getPaginatedAstres(
+            @RequestParam(defaultValue = "0") int pageNumber,
+            @RequestParam(defaultValue = "1000") int size,
+            @RequestParam(defaultValue = "astreID") String sortBy,
+            @RequestParam(defaultValue = "asc") String order
+    ) {
+        return ResponseEntity.ok(astreService.getPaginatedAstres(pageNumber, size, sortBy, order));
+    }
+
 
     @Operation(summary = "Get an astre", description = "Get an astre using a type and name")
     @GetMapping("/astre")
