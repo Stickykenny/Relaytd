@@ -5,6 +5,7 @@ import me.stky.relaytd.api.model.Astre;
 import me.stky.relaytd.api.model.AstreID;
 import me.stky.relaytd.api.repository.AstreRepository;
 import me.stky.relaytd.api.service.AstreServiceImpl;
+import me.stky.relaytd.config.SpringDataConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.*;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -144,6 +146,13 @@ public class AstreServiceTest {
         assertTrue(result);
     }
 
+    @Test
+    void testGetAstres_tooMany() {
+
+        int astreNumber = SpringDataConfig.MAX_UNPAGED_ROWS + 1;
+        when(astreRepository.count()).thenReturn((long) astreNumber);
+        assertThrows(ResponseStatusException.class, () -> astreService.getAllAstre());
+    }
 
     @Test
     void testGetPaginatedAstres_empty() {
@@ -155,7 +164,6 @@ public class AstreServiceTest {
         when(astreRepository.findAll(any(Pageable.class))).thenReturn(fakePage);
 
         Page<Astre> result = astreService.getPaginatedAstres(pageNumber, size);
-
 
         assertTrue(result.isEmpty());
         assertEquals(1, result.getTotalPages());
@@ -178,7 +186,6 @@ public class AstreServiceTest {
 
         Page<Astre> result = astreService.getPaginatedAstres(pageNumber, size);
 
-
         assertFalse(result.isEmpty());
         assertEquals(Math.ceilDiv(astreNumber, size), result.getTotalPages());
         assertEquals(bulkAstres, result.getContent());
@@ -200,7 +207,6 @@ public class AstreServiceTest {
 
         Page<Astre> result = astreService.getPaginatedAstres(pageNumber, size);
 
-
         assertFalse(result.isEmpty());
         assertEquals(Math.ceilDiv(astreNumber, size), result.getTotalPages());
         assertEquals(bulkAstres, result.getContent());
@@ -209,7 +215,6 @@ public class AstreServiceTest {
         for (int i = 0; i < resultList.size(); i++) {
             assertEquals(createAstre(i), resultList.get(i));
         }
-
     }
 
 

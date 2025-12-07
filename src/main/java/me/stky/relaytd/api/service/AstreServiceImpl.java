@@ -7,12 +7,15 @@ import me.stky.relaytd.api.model.Astre;
 import me.stky.relaytd.api.model.AstreDTO;
 import me.stky.relaytd.api.model.AstreID;
 import me.stky.relaytd.api.repository.AstreRepository;
+import me.stky.relaytd.config.SpringDataConfig;
 import org.hibernate.query.SortDirection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -32,11 +35,18 @@ public class AstreServiceImpl implements AstreService {
         this.astreRepository = astreRepository;
     }
 
+
+    /**
+     * @return
+     * @throws ResponseStatusException When too many data will be loaded, use pagination in this case
+     */
     @Override
-    public List<Astre> getAllAstre() {
-        return
-                //astreRepository.getAllByTopic("topic").stream().toList();
-                astreRepository.findAll();
+    public List<Astre> getAllAstre() throws ResponseStatusException {
+        long rowCounts = astreRepository.count();
+        if (rowCounts > SpringDataConfig.MAX_UNPAGED_ROWS) {
+            throw new ResponseStatusException(HttpStatus.PAYLOAD_TOO_LARGE, "Too many rows : " + rowCounts + ", use paginated.");
+        }
+        return astreRepository.findAll();
     }
 
     public Page<Astre> getPaginatedAstres(int pageNumber, int size, String sortBy, String order) {
