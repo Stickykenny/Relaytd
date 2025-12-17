@@ -2,6 +2,7 @@ package me.stky.relaytd.api.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.Valid;
 import me.stky.relaytd.api.model.AstreID;
 import me.stky.relaytd.api.model.CollectionEntry;
 import me.stky.relaytd.api.model.UpdateAstreIDRequest;
@@ -33,7 +34,7 @@ public class CollectionController {
     @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "", description = "")
     @PostMapping("/getCollection")
-    public ResponseEntity<List<CollectionEntry>> getCollection(@RequestBody AstreID astreID) {
+    public ResponseEntity<List<CollectionEntry>> getCollection(@Valid @RequestBody AstreID astreID) {
         return ResponseEntity.ok(collectionService.getFromSource(astreID));
     }
 
@@ -41,7 +42,7 @@ public class CollectionController {
     @PreAuthorize("hasAuthority('ROLE_USER')") // TODO : Change this in prod
     @Operation(summary = "", description = "")
     @PostMapping("/astre")
-    public ResponseEntity<CollectionEntry> saveAstre(@RequestBody CollectionEntry entry) {
+    public ResponseEntity<CollectionEntry> saveAstre(@Valid @RequestBody CollectionEntry entry) {
         return collectionService.saveCollectionEntry(entry, entry.getAstre().getAstreID())
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
@@ -51,7 +52,7 @@ public class CollectionController {
     @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "", description = "")
     @PutMapping("/changeAstreSource")
-    public ResponseEntity<List<CollectionEntry>> changeAstreSource(@RequestBody UpdateAstreIDRequest updateAstreIDRequest) {
+    public ResponseEntity<List<CollectionEntry>> changeAstreSource(@Valid @RequestBody UpdateAstreIDRequest updateAstreIDRequest) {
         return ResponseEntity.ok(collectionService.getFromSource(updateAstreIDRequest.getNewID()));
     }
 

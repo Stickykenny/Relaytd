@@ -1,15 +1,14 @@
 package me.stky.relaytd.api.model;
 
 
+import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
-
-import java.util.Objects;
 
 
 @Builder
 public record AstreDTO(
+        @NotNull
         AstreID astreID,
-
 
         String subname,
         String tags,
@@ -20,7 +19,4 @@ public record AstreDTO(
 
         Boolean fromBefore
 ) {
-    public AstreDTO {
-        Objects.requireNonNull(astreID, "Please provide a non-null ID for the Astre");
-    }
 }

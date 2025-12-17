@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import me.stky.relaytd.api.model.Astre;
 import me.stky.relaytd.api.model.AstreDTO;
 import me.stky.relaytd.api.model.AstreID;
@@ -40,11 +41,11 @@ public class AstreController {
         return new ResponseEntity<>("Welcome to the controller", HttpStatus.OK);
     }
 
-    @PreAuthorize("hasAuthority('ROLE_USER')") // TODO : Change this in prod
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "Save an astre", description = "Save an astre, doesn't save if the ID is already used")
     @PostMapping("/astre")
-    public ResponseEntity<Astre> saveAstre(@RequestBody Astre astre) {
-        return astreService.saveAstre(astre)
+    public ResponseEntity<Astre> saveAstre(@Valid @RequestBody AstreDTO astreDTO) {
+        return astreService.upsertAstre(astreDTO)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
     }
@@ -90,29 +91,29 @@ public class AstreController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }*/
 
-    @PreAuthorize("hasAuthority('ROLE_USER')") // TODO : Change this in prod
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "Update an astre", description = "Update (or create) an astre using a type and name")
     @PutMapping("/astre")
-    public ResponseEntity<Astre> update(@RequestBody AstreDTO astreDTO) {
+    public ResponseEntity<Astre> update(@Valid @RequestBody AstreDTO astreDTO) {
         return astreService.updateAstre(astreDTO)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @PreAuthorize("hasAuthority('ROLE_USER')") // TODO : Change this in prod
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "Delete an astre", description = "Delete using the type and name")
     @DeleteMapping("/astre")
-    public ResponseEntity<Object> deleteAstre(@RequestBody AstreID astreID) {
+    public ResponseEntity<Object> deleteAstre(@Valid @RequestBody AstreID astreID) {
         if (astreService.deleteAstre(astreID)) {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
-    @PreAuthorize("hasAuthority('ROLE_USER')") // TODO : Change this in prod
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "Save/Update multiples astre", description = "Mass update")
     @PostMapping("/astres")
-    public ResponseEntity<List<Astre>> upsertAstres(@RequestBody List<AstreDTO> astresDTO) {
+    public ResponseEntity<List<Astre>> upsertAstres(@Valid @RequestBody List<AstreDTO> astresDTO) {
         System.out.println("save multiples");
         List<Astre> upsertedAstres = astreService.upsertAstres(astresDTO);
         if (upsertedAstres.isEmpty()) {
@@ -122,10 +123,10 @@ public class AstreController {
     }
 
 
-    @PreAuthorize("hasAuthority('ROLE_USER')") // TODO : Change this in prod
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "Update an Astre's ID", description = "Update an Astre's ID, remove the old one")
     @PutMapping("astreid")
-    public ResponseEntity<Astre> updateAstreID(@RequestBody UpdateAstreIDRequest updateRequest) {
+    public ResponseEntity<Astre> updateAstreID(@Valid @RequestBody UpdateAstreIDRequest updateRequest) {
         return astreService.updateAstreID(updateRequest.getOldID(), updateRequest.getNewID())
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());

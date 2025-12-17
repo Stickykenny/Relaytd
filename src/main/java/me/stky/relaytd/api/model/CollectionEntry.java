@@ -1,6 +1,7 @@
 package me.stky.relaytd.api.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -16,14 +17,18 @@ import java.time.LocalDate;
 public class CollectionEntry {
 
     @Id
+    @NotNull
     private String id;
 
     @Id
+    @NotNull
     private String collection;
 
     @Id
+    @NotNull
     private String variant;
 
+    @NotNull
     @ManyToOne
     @JoinColumns({
             @JoinColumn(name = "type", referencedColumnName = "type"),

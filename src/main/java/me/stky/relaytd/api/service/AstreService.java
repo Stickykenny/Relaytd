@@ -21,6 +21,8 @@ public interface AstreService {
 
     boolean deleteAstre(AstreID astreID);
 
+    Optional<Astre> upsertAstre(AstreDTO astreDTO);
+
     List<Astre> upsertAstres(List<AstreDTO> astresDTO);
 
 

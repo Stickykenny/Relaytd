@@ -112,6 +112,11 @@ public class AstreServiceImpl implements AstreService {
     }
 
     @Override
+    public Optional<Astre> upsertAstre(AstreDTO astreDTO) {
+        return updateAstre(astreDTO);
+    }
+
+    @Override
     public List<Astre> upsertAstres(List<AstreDTO> astresDTO) {
         List<Astre> updatedAstres = new ArrayList<>();
         for (AstreDTO astreDTO : astresDTO) {
