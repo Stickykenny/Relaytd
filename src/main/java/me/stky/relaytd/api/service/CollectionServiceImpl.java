@@ -3,13 +3,11 @@ package me.stky.relaytd.api.service;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.extern.slf4j.Slf4j;
-import me.stky.relaytd.api.model.Astre;
-import me.stky.relaytd.api.model.AstreID;
-import me.stky.relaytd.api.model.CollectionEntry;
-import me.stky.relaytd.api.model.CollectionEntryID;
+import me.stky.relaytd.api.model.*;
 import me.stky.relaytd.api.repository.CollectionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 import java.util.Optional;
@@ -30,9 +28,37 @@ public class CollectionServiceImpl implements CollectionService {
     }
 
     @Override
-    public List<CollectionEntry> getCollection(String collection) {
-        return collectionRepository.findAll();//collectionRepository.getAllByCollection(collection);
+    public List<CollectionEntry> getCollectionFromName(String collection) {
+        return collectionRepository.findByName(collection);
     }
+
+    @Override
+    public List<CollectionEntry> getFromSource(@RequestBody AstreID astreID) {
+        return collectionRepository.findBySource(astreID.getName(), astreID.getType(), astreID.getSubtype());
+    }
+
+    @Override
+    public CollectionEntry changeAstreSource(UpdateAstreIDRequest updateAstreIDRequest) {
+        return null;
+    }
+
+    /*@Override
+    public CollectionEntry changeAstreSource(UpdateAstreIDRequest updateAstreIDRequest) {
+
+        /*Objects.requireNonNull(oldID);
+        Objects.requireNonNull(newID, "Newer ID can't be null");
+
+        var astreDB = astreRepository.findById(oldID);
+        if (astreDB.isEmpty() || astreRepository.findById(newID).isPresent()) {
+            return Optional.empty();
+        }
+        Astre astreCopy = astreDB.get().clone();
+        astreCopy.setAstreID(newID);
+        astreCopy.setLast_modified(LocalDate.now());
+        Astre newAstre = astreRepository.save(astreCopy);
+        astreRepository.deleteById(oldID);
+        return Optional.of(newAstre);
+    }*/
 
     @Override
     public Optional<CollectionEntry> saveCollectionEntry(CollectionEntry entry, AstreID foreignKeyEntity) {
@@ -47,5 +73,6 @@ public class CollectionServiceImpl implements CollectionService {
         }
         return Optional.empty();
     }
+
 
 }
