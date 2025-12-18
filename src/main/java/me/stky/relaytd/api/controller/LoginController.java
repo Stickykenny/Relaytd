@@ -85,7 +85,7 @@ public class LoginController {
             response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
             return ResponseEntity.ok()
                     .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                    .body(Map.of("Message", "Login successful"));
+                    .body(Map.of("Message", "Login successful", "Token", token));
         } catch (AuthenticationException e) {
             log.info("login failed");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("Message", "Invalid credentials"));
