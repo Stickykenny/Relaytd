@@ -41,6 +41,7 @@ Back-end
 > - Swagger integrated
 > - Logging with Logback
 > - Unit Test with Junit 5 and Mockito
+> - Paginated API
 
 Front-end
 
