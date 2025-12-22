@@ -42,6 +42,7 @@ Back-end
 > - Logging with Logback
 > - Unit Test with Junit 5 and Mockito
 > - Paginated API
+> - Local Deployment with Docker and Kubernetes / minikube
 
 Front-end
 
@@ -49,6 +50,7 @@ Front-end
 > - HttpInterceptorFn Used for JWT token
 > - Add/Send new entries
 > - Toast Notification with ngx-toastr
+> - Dynamic DOM generation (Angular) for Procedural animation (visible for preview message)
 
 #### Security
 
