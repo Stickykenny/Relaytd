@@ -117,7 +117,7 @@ public class JWTService {
                 .httpOnly(true)
                 .secure(true)
                 .path("/")
-                .maxAge(Duration.ofMinutes(1))
+                .maxAge(Duration.ofMinutes(5))
                 .sameSite("None") // or "Strict" or "None" or "Lax"
                 .build();
     }
@@ -204,5 +204,10 @@ public class JWTService {
         log.debug("Generated this validation key [" + randomValidationKey + "], for this user [" + user.getUsername() + "]");
         userRepository.save(user);
         return randomValidationKey;
+    }
+
+
+    public List<SimpleGrantedAuthority> getRoles(Jwt jwt) {
+        return jwt.getClaimAsStringList("roles").stream().map(SimpleGrantedAuthority::new).toList();
     }
 }

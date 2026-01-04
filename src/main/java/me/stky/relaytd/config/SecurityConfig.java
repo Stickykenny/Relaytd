@@ -127,6 +127,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/auth/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").permitAll()
                         .requestMatchers("/auth/**", "/logout", "/resources/**", "/static/**", "/css/**").permitAll()
+                        .requestMatchers("/test/**").permitAll()
                         .anyRequest().authenticated())
 
                 .addFilterBefore(jwtAuthFilter(jwtService), UsernamePasswordAuthenticationFilter.class)
@@ -139,46 +140,9 @@ public class SecurityConfig {
                 .build();
 
     }
+    // Use hasAuthority if data is "ADMIN"
+    // Use hasRole if data is "ROLE_ADMIN"
 
-    //server-side login
-    /*@Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-
-        return http
-                // authorize PUT and POST
-                //.csrf(csrf -> csrf
-                //        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                //        .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()))
-                .csrf(AbstractHttpConfigurer::disable)
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .authorizeHttpRequests(
-                        auth -> auth
-                                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // OPTIONS requests for handling CORS
-                                .requestMatchers("/login", "/resources/**", "/static/**", "/css/**", "/js/**").permitAll()
-                                .requestMatchers("/admin/**").hasAuthority("ADMIN")
-                                .requestMatchers("/user/**").hasAnyAuthority("USER", "ADMIN")
-                                .anyRequest().authenticated()
-                        //.anyRequest().permitAll()
-                )
-                //.formLogin(c -> c.loginPage("/login")
-                //        .permitAll()
-                //        .defaultSuccessUrl("/homepage", true)
-                //       .failureUrl("/login?error=true")
-                //)
-                .formLogin(Customizer.withDefaults())
-                .oauth2Login(Customizer.withDefaults())
-                .logout(logout -> logout
-                        .logoutSuccessUrl("/login?logout=true")
-                        .invalidateHttpSession(true)
-                        .deleteCookies("JSESSIONID")
-                        .permitAll())
-
-                .oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults()))
-                .httpBasic(Customizer.withDefaults())
-                .build();
-        // Use hasAuthority if data is "ADMIN"
-        // Use hasRole if data is "ROLE_ADMIN"
-    } //*/
 
     @Bean
     public UserDetailsService users() {
@@ -187,7 +151,10 @@ public class SecurityConfig {
         return new InMemoryUserDetailsManager(user);
     }
 
-    /*@Bean
+
+    /*
+    // AuthenticationManagerBuilder
+    @Bean
     public AuthenticationManager authenticationManager(HttpSecurity http, BCryptPasswordEncoder bCryptPasswordEncoder) throws Exception {
 
         AuthenticationManagerBuilder authenticationManagerBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
